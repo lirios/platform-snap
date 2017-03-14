@@ -17,8 +17,14 @@ apps:
     fluid-demo:
         command: liri-app-launch "fluid-demo"
         plugs:
-            - home
-            - network
+            - x11
+            - opengl
+            - unity7
+            - unity8
+
+    fluid-dialog:
+        command: liri-app-launch "fluid-dialog"
+        plugs:
             - x11
             - opengl
             - unity7
@@ -31,10 +37,16 @@ parts:
         plugin: dump
         organize:
             liri-app-launch.sh: bin/liri-app-launch
+    # Fluid Dialog
+    fluid-dialog:
+        source: src/fluid-dialog
+        plugin: qmake
+        qt-version: qt5
+        after: [qt, fluid]
     # Fluid (http://github.com/lirios/fluid)
     fluid:
         source: https://github.com/lirios/fluid
-        source-branch: develop # v0.9.0
+        source-branch: v0.10.0 # develop
         source-type: git
         plugin: cmake
         build-packages: 
@@ -64,66 +76,7 @@ parts:
         source: https://code.qt.io/qt/qt5.git
         source-branch: "v5.8.0"
         build-attributes: ["no-system-libraries"]
-        # From deb packaging build deps
-        build-packages:
-            - g++
-#               - debhelper
-#               - dpkg-dev
-            - freetds-dev
-            - gdb
-            - libasound2-dev
-            - libatspi2.0-dev
-            - libcups2-dev
-            - libdbus-1-dev
-            - libfontconfig1-dev
-            - libfreetype6-dev
-            - libgbm-dev
-            - libgl1-mesa-dev
-            - libgles2-mesa-dev
-            - libglib2.0-dev
-            - libglu1-mesa-dev
-            - libgstreamer-plugins-base1.0-dev
-            - libgstreamer1.0-dev
-            - libgtk2.0-dev
-            - libharfbuzz-dev
-            - libicu-dev
-            - libinput-dev
-            - libjpeg-dev
-            - libmtdev-dev
-            - libmysqlclient-dev
-            - libpcre3-dev
-            - libpng12-dev
-            - libpq-dev
-            - libproxy-dev
-            - libpulse-dev
-            - libsqlite3-dev
-            - libssl-dev
-            - libudev-dev
-            - libx11-dev
-            - libx11-xcb-dev
-            - libxcb-icccm4-dev
-            - libxcb-image0-dev
-            - libxcb-keysyms1-dev
-            - libxcb-randr0-dev
-            - libxcb-render-util0-dev
-            - libxcb-render0-dev
-            - libxcb-shape0-dev
-            - libxcb-shm0-dev
-            - libxcb-sync-dev
-            - libxcb-xfixes0-dev
-            - libxcb-xinerama0-dev
-            - libxcb-xkb-dev
-            - libxcb1-dev
-            - libxext-dev
-            - libxi-dev
-            - libxkbcommon-dev
-            - libxkbcommon-x11-dev
-            - libxrender-dev
-            - pkg-kde-tools
-            - publicsuffix
-            - unixodbc-dev
-            - xvfb
-            - zlib1g-dev
+        after: [qt-dependencies]
         configflags:        # config flags: for arm64, -opengl es2 platform linux-g++
             - -prefix
             - $SNAPCRAFT_PART_INSTALL/lib/qt5
@@ -193,6 +146,69 @@ parts:
             - qtwebkit
             - -skip
             - qtwebkit-examples
+    # Qt dependencies
+    qt-dependencies:
+        plugin: dump
+        # From deb packaging build deps
+        build-packages:
+            - g++
+#               - debhelper
+#               - dpkg-dev
+            - freetds-dev
+            - gdb
+            - libasound2-dev
+            - libatspi2.0-dev
+            - libcups2-dev
+            - libdbus-1-dev
+            - libfontconfig1-dev
+            - libfreetype6-dev
+            - libgbm-dev
+            - libgl1-mesa-dev
+            - libgles2-mesa-dev
+            - libglib2.0-dev
+            - libglu1-mesa-dev
+            - libgstreamer-plugins-base1.0-dev
+            - libgstreamer1.0-dev
+            - libgtk2.0-dev
+            - libharfbuzz-dev
+            - libicu-dev
+            - libinput-dev
+            - libjpeg-dev
+            - libmtdev-dev
+            - libmysqlclient-dev
+            - libpcre3-dev
+            - libpng12-dev
+            - libpq-dev
+            - libproxy-dev
+            - libpulse-dev
+            - libsqlite3-dev
+            - libssl-dev
+            - libudev-dev
+            - libx11-dev
+            - libx11-xcb-dev
+            - libxcb-icccm4-dev
+            - libxcb-image0-dev
+            - libxcb-keysyms1-dev
+            - libxcb-randr0-dev
+            - libxcb-render-util0-dev
+            - libxcb-render0-dev
+            - libxcb-shape0-dev
+            - libxcb-shm0-dev
+            - libxcb-sync-dev
+            - libxcb-xfixes0-dev
+            - libxcb-xinerama0-dev
+            - libxcb-xkb-dev
+            - libxcb1-dev
+            - libxext-dev
+            - libxi-dev
+            - libxkbcommon-dev
+            - libxkbcommon-x11-dev
+            - libxrender-dev
+            - pkg-kde-tools
+            - publicsuffix
+            - unixodbc-dev
+            - xvfb
+            - zlib1g-dev
         # currently tailored from ubuntu 16.04 package names (mostly libpng etc may vary)
         stage-packages:
             - etc1tool # minimal package for depending on libpng regardless of Ubuntu version
@@ -242,6 +258,7 @@ parts:
             - libxi6
             - libxkbcommon0
             - libxkbcommon-x11-0
+            - libxcb-xinerama0
             - libxrender1
             - perl
             - zlib1g
