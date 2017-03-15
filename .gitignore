@@ -6,6 +6,7 @@ parts/
 prime/
 stage/
 *.snap
+*source.tar.bz2
 
 # ------ #
 # Python #
