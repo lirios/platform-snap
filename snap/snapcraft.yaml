@@ -67,6 +67,15 @@ parts:
             cd ../src
             ./scripts/fetch_icons.sh
         after: [qt]
+    # CLI YAML parser written in go
+    # https://github.com/mikefarah/yaml
+    # Made by Mike Farah (@mikefarah)
+    # MIT licensed
+    yaml-cli:
+        source: https://github.com/mikefarah/yaml
+        source-type: git
+        source-tag: "1.6"
+        plugin: go
     # Qt
     # based on https://github.com/tjyrinki/qt58
     # Thanks to Timo Jyrinki (@tjyrinki)
