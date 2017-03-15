@@ -20,7 +20,6 @@ apps:
             - x11
             - opengl
             - unity7
-            - unity8
 
     fluid-dialog:
         command: liri-app-launch "fluid-dialog"
@@ -28,7 +27,6 @@ apps:
             - x11
             - opengl
             - unity7
-            - unity8
 
 parts:
     # Liri App Launcher
