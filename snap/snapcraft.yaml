@@ -1,5 +1,5 @@
-name: liri-platform
-version: '0.1.0'
+name: liri-platform0
+version: '0.10.0'
 summary: Liri Platform for sharing common libraries used by Liri products
 description: |
     The Liri Platform provides a set of libraries that can be used by
@@ -9,7 +9,7 @@ confinement: strict
 
 slots:
     platform:
-        content: liri-platform_0.1.0
+        content: liri-platform0
         interface: content
         read: [.]
 
