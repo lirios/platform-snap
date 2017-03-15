@@ -102,7 +102,7 @@ ApplicationWindow {
 
             Button {
                 Layout.alignment: Qt.AlignRight
-                text: "Okay"
+                text: "Ok"
                 flat: true
                 onClicked: {
                     Qt.quit();
