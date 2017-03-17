@@ -37,7 +37,7 @@ parts:
     # Fluid (http://github.com/lirios/fluid)
     fluid:
         source: https://github.com/lirios/fluid
-        source-branch: v0.10.0 # develop
+        source-tag: v0.10.0 # develop
         source-type: git
         plugin: cmake
         build-packages: 
@@ -74,7 +74,7 @@ parts:
         plugin: autotools
         source-type: git
         source: https://code.qt.io/qt/qt5.git
-        source-branch: "v5.8.0"
+        source-tag: "v5.8.0"
         build-attributes: ["no-system-libraries"]
         after: [qt-dependencies]
         configflags:        # config flags: for arm64, -opengl es2 platform linux-g++
@@ -83,18 +83,6 @@ parts:
             - -bindir
             - $SNAPCRAFT_PART_INSTALL/usr/bin
             - -release
-            #        - -libdir $SNAP/lib
-            #        - -docdir $SNAP/doc
-            #        - -headerdir $SNAP/include
-            #        - -datadir $SNAP/share
-            #        - -archdatadir $SNAP/lib
-            #        - -hostdatadir $SNAP/share
-            #        - -plugindir $SNAP/lib/plugins
-            #        - -importdir $SNAP/lib/imports
-            #        - -translationdir $SNAP/share/translations
-            #        - -hostdatadir $SNAP/lib
-            #        - -sysconfdir $SNAP/etc/xdg
-            #        - -examplesdir $SNAP/lib/examples
             - -confirm-license
             - -opensource
             - -plugin-sql-mysql
@@ -115,9 +103,7 @@ parts:
             - -verbose
             - -optimized-qmake
             - -dbus-linked
-            #- -no-strip
             - -strip
-            #- -no-separate-debug-info
             - -qpa
             - xcb
             - -xcb
@@ -152,8 +138,6 @@ parts:
         # From deb packaging build deps
         build-packages:
             - g++
-#               - debhelper
-#               - dpkg-dev
             - freetds-dev
             - gdb
             - libasound2-dev
