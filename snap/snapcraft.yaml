@@ -58,6 +58,12 @@ parts:
             cd ../src
             ./scripts/fetch_icons.sh
         after: [qt]
+    # Material Design fonts
+    fonts:
+        plugin: nil
+        stage-packages:
+            - fonts-roboto
+            - fonts-noto
     # CLI YAML parser written in go
     # https://github.com/mikefarah/yaml
     # Made by Mike Farah (@mikefarah)
