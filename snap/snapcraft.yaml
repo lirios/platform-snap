@@ -78,9 +78,8 @@ parts:
     # Thanks to Timo Jyrinki (@tjyrinki)
     qt:
         plugin: autotools
-        source-type: git
-        source: https://code.qt.io/qt/qt5.git
-        source-tag: "v5.8.0"
+        source: https://download.qt.io/archive/qt/5.9/5.9.0/single/qt-everywhere-opensource-src-5.9.0.tar.xz
+        source-type: tar
         build-attributes: ["no-system-libraries"]
         after: [qt-dependencies]
         configflags:        # config flags: for arm64, -opengl es2 platform linux-g++
