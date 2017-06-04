@@ -1,0 +1,9 @@
+name: platform-snap
+summary: Snap packaging for the Liri platform libraries
+description: |
+  Liri App Platform package for snap. This snap package serves
+  as bundle for libraries commonly used by Liri Apps
+jobs:
+  - name: platform-snap
+    type: snapcraft
+    source: .
