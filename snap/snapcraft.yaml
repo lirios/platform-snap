@@ -564,6 +564,8 @@ parts:
             - -DCMAKE_INSTALL_PREFIX=/
             - -DCMAKE_INSTALL_LIBDIR=lib
         build-attributes: ["no-system-libraries"]
+    # Qbs
+    # Build tool
     qbs:
         plugin: qmake
         source: https://github.com/qt-labs/qbs/archive/v1.8.0.tar.gz
