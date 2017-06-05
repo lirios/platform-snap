@@ -56,6 +56,16 @@ parts:
             cd ../src
             ./scripts/fetch_icons.sh
         after: [qt]
+    # libliri
+    # Library for Liri apps
+    libliri:
+        plugin: qbs
+        source: https://github.com/lirios/libliri.git
+        build-attributes: ["no-system-libraries"]
+        after:
+            - libqtxdg
+            - kde-dependencies
+            - qbs
     # Material Design fonts
     fonts:
         plugin: nil
@@ -554,6 +564,13 @@ parts:
             - -DCMAKE_INSTALL_PREFIX=/
             - -DCMAKE_INSTALL_LIBDIR=lib
         build-attributes: ["no-system-libraries"]
+    qbs:
+        plugin: qmake
+        source: https://github.com/qt-labs/qbs/archive/v1.8.0.tar.gz
+        build-attributes: ["no-system-libraries"]
+        qt-version: qt5
+        project-files: [qbs.pro]
+        after: [qt]
     # Qt
     # based on https://github.com/tjyrinki/qt58
     # Thanks to Timo Jyrinki (@tjyrinki)
