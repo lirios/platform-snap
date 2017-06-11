@@ -582,59 +582,49 @@ parts:
         source-type: tar
         build-attributes: ["no-system-libraries"]
         after: [qt-dependencies]
-        configflags:        # config flags: for arm64, -opengl es2 platform linux-g++
-            - -prefix
-            - $SNAPCRAFT_PART_INSTALL/lib/qt5
-            - -bindir
-            - $SNAPCRAFT_PART_INSTALL/usr/bin
-            - -release
-            - -confirm-license
-            - -opensource
-            - -plugin-sql-mysql
-            - -plugin-sql-odbc
-            - -plugin-sql-psql
-            - -plugin-sql-sqlite
-            - -no-sql-sqlite2
-            - -plugin-sql-tds
-            - -system-sqlite
-            - -platform
-            - linux-g++-64
-            - -system-harfbuzz
-            - -system-zlib
-            - -system-libpng
-            - -system-libjpeg
-            - -openssl
-            - -no-rpath
-            - -verbose
-            - -optimized-qmake
-            - -dbus-linked
-            - -strip
-            - -qpa
-            - xcb
-            - -xcb
-            - -glib
-            - -icu
-            - -accessibility
-            - -no-compile-examples
-            - -no-directfb
-            - -gstreamer
-            - "1.0"
-            - -opengl
-            - desktop
-            - -nomake
-            - examples
-            - -nomake
-            - tests
-            - -skip
-            - qtquick1
-            - -skip
-            - qtwebengine
-            - -skip
-            - qtwebview
-            - -skip
-            - qtwebkit
-            - -skip
-            - qtwebkit-examples
+        build: |
+            mkdir build && cd build
+            ../configure \
+                -prefix $SNAPCRAFT_PART_INSTALL/lib/qt5 \
+                -bindir $SNAPCRAFT_PART_INSTALL/usr/bin \
+                -release \
+                -confirm-license \
+                -opensource \
+                -plugin-sql-mysql \
+                -plugin-sql-odbc \
+                -plugin-sql-psql \
+                -plugin-sql-sqlite \
+                -no-sql-sqlite2 \
+                -plugin-sql-tds \
+                -system-sqlite \
+                -platform linux-g++-64 \
+                -system-harfbuzz \
+                -system-zlib \
+                -system-libpng \
+                -system-libjpeg \
+                -openssl \
+                -no-rpath \
+                -verbose \
+                -optimized-qmake \
+                -dbus-linked \
+                -strip \
+                -qpa xcb \
+                -xcb \
+                -glib \
+                -icu \
+                -accessibility \
+                -no-compile-examples \
+                -no-directfb \
+                -gstreamer "1.0" \
+                -opengl desktop \
+                -nomake examples \
+                -nomake tests \
+                -skip qtquick1 \
+                -skip qtwebkit \
+                -skip qtwebkit-examples
+            make -j$(nproc)
+            make install
+            cd ..
     # Qt dependencies
     qt-dependencies:
         plugin: dump
@@ -696,6 +686,46 @@ parts:
             - unixodbc-dev
             - xvfb
             - zlib1g-dev
+            # QtWebEngine
+            - bison
+            - build-essential
+            - gperf
+            - flex
+            - ruby
+            - python
+            - libbz2-dev
+            - libcap-dev
+            - libdrm-dev
+            - libegl1-mesa-dev
+            - libgcrypt11-dev
+            - libnss3-dev
+            - libpci-dev
+            - libxtst-dev
+            - libxss-dev
+            - gyp
+            - ninja-build
+            # Additional
+            # some of them may, some
+            # of them may not be required
+            - libflac-dev
+            - libflac++-dev
+            - libsnappy-dev
+            - libxcursor-dev
+            - libxcomposite-dev
+            - libxdamage-dev
+            - libxrandr-dev
+            - libsrtp0-dev
+            - libwebp-dev
+            - libspeex-dev
+            - libjsoncpp-dev
+            - libopus-dev
+            - libspeexdsp-dev
+            - libminizip-dev
+            - libavutil-dev
+            - libavformat-dev
+            - libavcodec-dev
+            - libevent-dev
+            - libopusfile-dev
         # currently tailored from ubuntu 16.04 package names (mostly libpng etc may vary)
         stage-packages:
             - etc1tool # minimal package for depending on libpng regardless of Ubuntu version
