@@ -41,7 +41,7 @@ Additionally, this plugin uses the following plugin-specific keywords:
       If no qt version is set then the base gcc/clang profile will be used.
 """
 import os
-import shutil
+import multiprocessing
 import snapcraft
 
 
@@ -72,6 +72,11 @@ class QbsPlugin(snapcraft.BasePlugin):
 
         schema['properties']['qt-version'] = {
             'enum': ['qt4', 'qt5'],
+            'default': 'qt5'
+        }
+
+        schema['properties']['qbs-jobs'] = {
+            'type': 'number',
             'default': None
         }
 
@@ -93,7 +98,7 @@ class QbsPlugin(snapcraft.BasePlugin):
         super().__init__(name, options, project)
         self.build_packages.extend(['gcc'])
 
-        if self.options.qt_version is not None:
+        if self.options.qt_version not in ('qt4', 'qt5'):
             raise RuntimeError('Unsupported Qt version: {!r}'.format(
                 self.options.qt_version))
 
@@ -126,19 +131,24 @@ class QbsPlugin(snapcraft.BasePlugin):
                      env=env)
 
         # Run the build.
-        self.run(['qbs', 'build',
+        self.run(['qbs', '-v',
                   '-d', self.builddir,
                   '-f', self.sourcedir,
+                  '-j', str(self.options.qbs_jobs or multiprocessing.cpu_count()),
                   self.options.qbs_build_variant,
                   'qbs.installRoot:' + self.installdir,
                   'profile:' + build_profile] + self.options.qbs_options,
-                 env=env)
+                  env=env)
 
     def _build_environment(self):
         env = os.environ.copy()
         if self.options.qt_version is not None:
             env['QT_SELECT'] = self.options.qt_version
-        env['PKG_CONFIG_PATH'] = self.project.parts_dir + '/qt/install/lib/qt5/lib/pkgconfig/'
+        env['PKG_CONFIG_PATH'] = '{0}/usr/lib/pkgconfig:{0}/usr/lib/x86_64-linux-gnu/pkgconfig:'.format(
+            self.project.stage_dir
+        ) + '{0}/lib/qt5/lib/pkgconfig/'.format(
+            self.project.stage_dir
+        )
         env['QTDIR'] = self.project.parts_dir + '/qt/install/lib/qt5/'
         env['QML_IMPORT_PATH'] = self.project.parts_dir + '/qt/install/lib/qt5/qml'
         env['QML2_IMPORT_PATH'] = self.project.parts_dir + '/qt/install/lib/qt5/qml'
