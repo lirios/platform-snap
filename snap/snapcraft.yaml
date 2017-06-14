@@ -36,25 +36,9 @@ parts:
         after: [qt, fluid]
     # Fluid (http://github.com/lirios/fluid)
     fluid:
-        source: https://github.com/lirios/fluid/archive/v0.10.0.tar.gz
-        plugin: cmake
-        build-packages: 
-            - extra-cmake-modules
-        configflags: 
-            - -DCMAKE_PREFIX_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib/cmake/
-            - -DCMAKE_BUILD_TYPE=Release
-            - -DCMAKE_INSTALL_PREFIX=/
-            - -DCMAKE_INSTALL_LIBDIR=lib/qt5/lib
-            - -DKDE_INSTALL_QMLDIR=/lib/qt5/qml
-            - -DECM_DIR=$SNAPCRAFT_STAGE/share/ECM/cmake
-        build-attributes: ["no-system-libraries"]        
-        prepare: |
-            # Change directory to ../src
-            # because cmake plugin wipes out
-            # build entirely before actually
-            # building.
-            cd ../src
-            ./scripts/fetch_icons.sh
+        source: https://github.com/lirios/fluid.git
+        plugin: qbs
+        build-attributes: ["no-system-libraries"]
         after: [qt]
     # libliri
     # Library for Liri apps
@@ -62,6 +46,10 @@ parts:
         plugin: qbs
         source: https://github.com/lirios/libliri.git
         build-attributes: ["no-system-libraries"]
+        # Workaround for odd qbs bug
+        # leading to failures
+        # in LXC containers
+        qbs-jobs: 1
         after:
             - libqtxdg
             - kde-dependencies
@@ -85,12 +73,6 @@ parts:
     libqtxdg:
         plugin: cmake
         source: https://github.com/lxde/libqtxdg/archive/2.0.0.tar.gz
-        configflags:
-            - -DCMAKE_PREFIX_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib/cmake/
-            - -DCMAKE_BUILD_TYPE=Release
-            - -DCMAKE_INSTALL_PREFIX=/
-            - -DCMAKE_INSTALL_LIBDIR=lib
-            - -DECM_DIR=$SNAPCRAFT_STAGE/share/ECM/cmake
         build-attributes: ["no-system-libraries"]
         after: [qt]
     # NetworkManagerQt
@@ -98,12 +80,6 @@ parts:
     networkmanager-qt:
         plugin: cmake
         source: https://github.com/KDE/networkmanager-qt/archive/v5.34.0.tar.gz
-        configflags:
-            - -DCMAKE_PREFIX_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib/cmake/
-            - -DCMAKE_BUILD_TYPE=Release
-            - -DCMAKE_INSTALL_PREFIX=/
-            - -DCMAKE_INSTALL_LIBDIR=lib
-            - -DECM_DIR=$SNAPCRAFT_STAGE/share/ECM/cmake
         build-attributes: ["no-system-libraries"]
         after: [kde-dependencies]
     # ModemManagerQt
@@ -111,12 +87,6 @@ parts:
     modemmanager-qt:
         plugin: cmake
         source: https://github.com/KDE/modemmanager-qt/archive/v5.34.0.tar.gz
-        configflags:
-            - -DCMAKE_PREFIX_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib/cmake/
-            - -DCMAKE_BUILD_TYPE=Release
-            - -DCMAKE_INSTALL_PREFIX=/
-            - -DCMAKE_INSTALL_LIBDIR=lib
-            - -DECM_DIR=$SNAPCRAFT_STAGE/share/ECM/cmake
         build-attributes: ["no-system-libraries"]
         after: [kde-dependencies]
     # KDE Solid
@@ -126,17 +96,6 @@ parts:
         source: https://github.com/KDE/solid/archive/v5.34.0.tar.gz
         build-attributes: ["no-system-libraries"]
         after: [kde-dependencies]
-        build: |
-            mkdir build && cd build
-            export LD_LIBRARY_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib:$LD_LIBRARY_PATH
-            cmake -DCMAKE_PREFIX_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib/cmake/ \
-                  -DCMAKE_BUILD_TYPE=Release \
-                  -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL \
-                  -DCMAKE_INSTALL_LIBDIR=lib \
-                  -DECM_DIR=$SNAPCRAFT_STAGE/share/ECM/cmake
-            make -j$(nproc)
-            make install
-            cd ..
     # Qt GStreamer
     qt-gstreamer:
         plugin: cmake
@@ -145,23 +104,24 @@ parts:
         source-tag: "1.2.0"
         build-attributes: ["no-system-libraries"]
         after: [kde-dependencies]
+        configflags:
+            - -DQT_VERSION=5
+            - -DUSE_QT_PLUGIN_DIR=OFF
         build: |
             # Dirty hack to make qt-gstreamer find <gst/gstconfig.h> located in
             # /usr/lib/x86_64-linux-gnu/gstreamer-1.0/include on Ubuntu 16.04
             # This is not required in later Ubuntu versions (e.g. Ubuntu 17.04).
             sed -i '143i/usr/lib/x86_64-linux-gnu/gstreamer-1.0/include' src/QGst/CMakeLists.txt
             sed -i '12iinclude_directories(/usr/lib/x86_64-linux-gnu/gstreamer-1.0/include)' elements/CMakeLists.txt
-            mkdir build && cd build
             export LD_LIBRARY_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib:$LD_LIBRARY_PATH
+            mkdir build && cd build
             cmake -DCMAKE_PREFIX_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib/cmake/ \
                   -DCMAKE_BUILD_TYPE=Release \
-                  -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL \
                   -DCMAKE_INSTALL_LIBDIR=lib \
                   -DECM_DIR=$SNAPCRAFT_STAGE/share/ECM/cmake \
-                  -DQT_VERSION=5 \
-                  -DUSE_QT_PLUGIN_DIR=OFF
+                  ..
             make -j$(nproc)
-            make install
+            make install PREFIX=$SNAPCRAFT_PART_INSTALL
             cd ..
     # polkit-qt-1
     # Qt wrapper around polkit-1 client libraries
@@ -169,54 +129,28 @@ parts:
         plugin: cmake
         source: https://github.com/KDE/polkit-qt-1/archive/v0.112.0.tar.gz
         build-attributes: ["no-system-libraries"]
+        configflags:
+            # polkit-qt-1 needs special treatment:
+            - -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL
+            - -DCMAKE_INSTALL_FULL_INCLUDEDIR=$SNAPCRAFT_PART_INSTALL/include
         after: [kde-dependencies]
-        build: |
-          mkdir build && cd build
-          export LD_LIBRARY_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib:$LD_LIBRARY_PATH
-          cmake -DCMAKE_PREFIX_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib/cmake/ \
-                -DCMAKE_BUILD_TYPE=Release \
-                -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL \
-                -DCMAKE_INSTALL_LIBDIR=lib \
-                -DCMAKE_INSTALL_FULL_INCLUDEDIR=$SNAPCRAFT_PART_INSTALL/include \
-                -DECM_DIR=$SNAPCRAFT_STAGE/share/ECM/cmake
-          make -j$(nproc)
-          make install
-          cd ..
     # KI18n
     # KDE Gettext-based UI text internationalization
     ki18n:
         plugin: cmake
         source: https://github.com/KDE/ki18n/archive/v5.34.0.tar.gz
-        configflags:
-            - -DCMAKE_PREFIX_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib/cmake/
-            - -DCMAKE_BUILD_TYPE=Release
-            - -DCMAKE_INSTALL_PREFIX=/
-            - -DCMAKE_INSTALL_LIBDIR=lib
-            - -DECM_DIR=$SNAPCRAFT_STAGE/share/ECM/cmake
         build-attributes: ["no-system-libraries"]
         after: [kde-dependencies]
     # KConfig
     # KDE's platform-independent settings library
     kconfig:
         plugin: cmake
-        source: https://github.com/KDE/kconfigwidgets/archive/v5.34.0.tar.gz
+        source: https://github.com/KDE/kconfig/archive/v5.34.0.tar.gz
         build-attributes: ["no-system-libraries"]
         after:
             - kde-dependencies
             - kauth
             - kcodecs
-        build: |
-            mkdir build && cd build
-            export LD_LIBRARY_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib:$LD_LIBRARY_PATH
-            cmake -DCMAKE_PREFIX_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib/cmake/ \
-                  -DCMAKE_BUILD_TYPE=Release \
-                  -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL \
-                  -DCMAKE_INSTALL_LIBDIR=lib \
-                  -DECM_DIR=$SNAPCRAFT_STAGE/share/ECM/cmake \
-                  ..
-            make -j$(nproc)
-            make install
-            cd ..
     # KCoreAddons
     # Collection of non-GUI utilities for Qt
     kcoreaddons:
@@ -224,17 +158,6 @@ parts:
         source: https://github.com/KDE/kcoreaddons/archive/v5.34.0.tar.gz
         build-attributes: ["no-system-libraries"]
         after: [kde-dependencies]
-        build: |
-            mkdir build && cd build
-            export LD_LIBRARY_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib:$LD_LIBRARY_PATH
-            cmake -DCMAKE_PREFIX_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib/cmake/ \
-                  -DCMAKE_BUILD_TYPE=Release \
-                  -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL \
-                  -DCMAKE_INSTALL_LIBDIR=lib \
-                  -DECM_DIR=$SNAPCRAFT_STAGE/share/ECM/cmake
-            make -j$(nproc)
-            make install
-            cd ..
     # KWindowSystem
     # KDE window system access
     kwindowsystem:
@@ -242,17 +165,6 @@ parts:
         source: https://github.com/KDE/kwindowsystem/archive/v5.34.0.tar.gz
         build-attributes: ["no-system-libraries"]
         after: [kde-dependencies]
-        build: |
-            mkdir build && cd build
-            export LD_LIBRARY_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib:$LD_LIBRARY_PATH
-            cmake -DCMAKE_PREFIX_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib/cmake/ \
-                  -DCMAKE_BUILD_TYPE=Release \
-                  -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL \
-                  -DCMAKE_INSTALL_LIBDIR=lib \
-                  -DECM_DIR=$SNAPCRAFT_STAGE/share/ECM/cmake
-            make -j$(nproc)
-            make install
-            cd ..
     # KAuth
     # KDE authentication library
     kauth:
@@ -263,17 +175,6 @@ parts:
             - kde-dependencies
             - kcoreaddons
             - polkit-qt-1
-        build: |
-            mkdir build && cd build
-            export LD_LIBRARY_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib:$LD_LIBRARY_PATH
-            cmake -DCMAKE_PREFIX_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib/cmake/ \
-                  -DCMAKE_BUILD_TYPE=Release \
-                  -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL \
-                  -DCMAKE_INSTALL_LIBDIR=lib \
-                  -DECM_DIR=$SNAPCRAFT_STAGE/share/ECM/cmake
-            make -j$(nproc)
-            make install
-            cd ..
     # KCodecs
     # KDE string encoding library
     kcodecs:
@@ -281,28 +182,11 @@ parts:
         source: https://github.com/KDE/kcodecs/archive/v5.34.0.tar.gz
         build-attributes: ["no-system-libraries"]
         after: [kde-dependencies]
-        build: |
-            mkdir build && cd build
-            export LD_LIBRARY_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib:$LD_LIBRARY_PATH
-            cmake -DCMAKE_PREFIX_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib/cmake/ \
-                  -DCMAKE_BUILD_TYPE=Release \
-                  -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL \
-                  -DCMAKE_INSTALL_LIBDIR=lib \
-                  -DECM_DIR=$SNAPCRAFT_STAGE/share/ECM/cmake
-            make -j$(nproc)
-            make install
-            cd ..
     # KDE GUI Addons
     # KDE Utilities for graphical user interfaces
     kguiaddons:
         plugin: cmake
         source: https://github.com/KDE/kguiaddons/archive/v5.34.0.tar.gz
-        configflags:
-            - -DCMAKE_PREFIX_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib/cmake/
-            - -DCMAKE_BUILD_TYPE=Release
-            - -DCMAKE_INSTALL_PREFIX=/
-            - -DCMAKE_INSTALL_LIBDIR=lib
-            - -DECM_DIR=$SNAPCRAFT_STAGE/share/ECM/cmake
         build-attributes: ["no-system-libraries"]
         after: [kde-dependencies]
     # KWidgetsAddons
@@ -312,17 +196,6 @@ parts:
         source: https://github.com/KDE/kwidgetsaddons/archive/v5.34.0.tar.gz
         build-attributes: ["no-system-libraries"]
         after: [kde-dependencies]
-        build: |
-            mkdir build && cd build
-            export LD_LIBRARY_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib:$LD_LIBRARY_PATH
-            cmake -DCMAKE_PREFIX_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib/cmake/ \
-                  -DCMAKE_BUILD_TYPE=Release \
-                  -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL \
-                  -DCMAKE_INSTALL_LIBDIR=lib \
-                  -DECM_DIR=$SNAPCRAFT_STAGE/share/ECM/cmake
-            make -j$(nproc)
-            make install
-            cd ..
     # KConfigWidgets
     # Widgets for configuration dialogs
     kconfigwidgets:
@@ -339,17 +212,6 @@ parts:
             - kguiaddons
             - ki18n
             - kwidgetsaddons
-        build: |
-            mkdir build && cd build
-            export LD_LIBRARY_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib:$LD_LIBRARY_PATH
-            cmake -DCMAKE_PREFIX_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib/cmake/ \
-                  -DCMAKE_BUILD_TYPE=Release \
-                  -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL \
-                  -DCMAKE_INSTALL_LIBDIR=lib \
-                  -DECM_DIR=$SNAPCRAFT_STAGE/share/ECM/cmake
-            make -j$(nproc)
-            make install
-            cd ..
     # KDBusAddons
     # KDE convenience classes for DBus
     kdbusaddons:
@@ -357,28 +219,11 @@ parts:
         source: https://github.com/KDE/kdbusaddons/archive/v5.34.0.tar.gz
         build-attributes: ["no-system-libraries"]
         after: [kde-dependencies]
-        build: |
-            mkdir build && cd build
-            export LD_LIBRARY_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib:$LD_LIBRARY_PATH
-            cmake -DCMAKE_PREFIX_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib/cmake/ \
-                  -DCMAKE_BUILD_TYPE=Release \
-                  -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL \
-                  -DCMAKE_INSTALL_LIBDIR=lib \
-                  -DECM_DIR=$SNAPCRAFT_STAGE/share/ECM/cmake
-            make -j$(nproc)
-            make install
-            cd ..
     # KArchive
     # KDE archive access library
     karchive:
         plugin: cmake
         source: https://github.com/KDE/karchive/archive/v5.34.0.tar.gz
-        configflags:
-            - -DCMAKE_PREFIX_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib/cmake/
-            - -DCMAKE_BUILD_TYPE=Release
-            - -DCMAKE_INSTALL_PREFIX=/
-            - -DCMAKE_INSTALL_LIBDIR=lib
-            - -DECM_DIR=$SNAPCRAFT_STAGE/share/ECM/cmake
         build-attributes: ["no-system-libraries"]
         after: [kde-dependencies]
     # KItemViews
@@ -388,28 +233,11 @@ parts:
         source: https://github.com/KDE/kitemviews/archive/v5.34.0.tar.gz
         build-attributes: ["no-system-libraries"]
         after: [kde-dependencies]
-        build: |
-            mkdir build && cd build
-            export LD_LIBRARY_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib:$LD_LIBRARY_PATH
-            cmake -DCMAKE_PREFIX_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib/cmake/ \
-                  -DCMAKE_BUILD_TYPE=Release \
-                  -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL \
-                  -DCMAKE_INSTALL_LIBDIR=lib \
-                  -DECM_DIR=$SNAPCRAFT_STAGE/share/ECM/cmake
-            make -j$(nproc)
-            make install
-            cd ..
     # KIconThemes
     # KDE icon GUI utilities
     kiconthemes:
         plugin: cmake
         source: https://github.com/KDE/kiconthemes/archive/v5.34.0.tar.gz
-        configflags:
-            - -DCMAKE_PREFIX_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib/cmake/
-            - -DCMAKE_BUILD_TYPE=Release
-            - -DCMAKE_INSTALL_PREFIX=/
-            - -DCMAKE_INSTALL_LIBDIR=lib
-            - -DECM_DIR=$SNAPCRAFT_STAGE/share/ECM/cmake
         build-attributes: ["no-system-libraries"]
         after:
             - kde-dependencies
@@ -419,17 +247,6 @@ parts:
             - kconfigwidgets
             - kwidgetsaddons
             - kitemviews
-        build: |
-            mkdir build && cd build
-            export LD_LIBRARY_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib:$LD_LIBRARY_PATH
-            cmake -DCMAKE_PREFIX_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib/cmake/ \
-                  -DCMAKE_BUILD_TYPE=Release \
-                  -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL \
-                  -DCMAKE_INSTALL_LIBDIR=lib \
-                  -DECM_DIR=$SNAPCRAFT_STAGE/share/ECM/cmake
-            make -j$(nproc)
-            make install
-            cd ..
     # Phonon
     # Multimedia library
     phonon:
@@ -439,18 +256,8 @@ parts:
         source-commit: 06a795aa00fea1c0a0b75c9daf0cbdf2f4ca9984
         build-attributes: ["no-system-libraries"]
         after: [kde-dependencies]
-        build: |
-            mkdir build && cd build
-            export LD_LIBRARY_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib:$LD_LIBRARY_PATH
-            cmake -DCMAKE_PREFIX_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib/cmake/ \
-                  -DCMAKE_BUILD_TYPE=Release \
-                  -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL \
-                  -DCMAKE_INSTALL_LIBDIR=lib \
-                  -DECM_DIR=$SNAPCRAFT_STAGE/share/ECM/cmake \
-                  -DPHONON_BUILD_PHONON4QT5=ON
-            make -j$(nproc)
-            make install
-            cd ..
+        configflags:
+            - -DPHONON_BUILD_PHONON4QT5=ON
     # KNotifications
     # KDE desktop notifications
     knotifications:
@@ -464,28 +271,11 @@ parts:
             - kcodecs
             - kcoreaddons
             - phonon
-        build: |
-            mkdir build && cd build
-            export LD_LIBRARY_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib:$LD_LIBRARY_PATH
-            cmake -DCMAKE_PREFIX_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib/cmake/ \
-                  -DCMAKE_BUILD_TYPE=Release \
-                  -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL \
-                  -DCMAKE_INSTALL_LIBDIR=lib \
-                  -DECM_DIR=$SNAPCRAFT_STAGE/share/ECM/cmake
-            make -j$(nproc)
-            make install
-            cd ..
     # KCrash
     # KDE application crash helpers
     kcrash:
         plugin: cmake
         source: https://github.com/KDE/kcrash/archive/v5.34.0.tar.gz
-        configflags:
-            - -DCMAKE_PREFIX_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib/cmake/
-            - -DCMAKE_BUILD_TYPE=Release
-            - -DCMAKE_INSTALL_PREFIX=/
-            - -DCMAKE_INSTALL_LIBDIR=lib
-            - -DECM_DIR=$SNAPCRAFT_STAGE/share/ECM/cmake
         build-attributes: ["no-system-libraries"]
         after:
             - kde-dependencies
@@ -497,25 +287,28 @@ parts:
         plugin: cmake
         source: https://github.com/KDE/kdoctools/archive/v5.34.0.tar.gz
         build-attributes: ["no-system-libraries"]
+        build: |
+            # Ugly hack to set correct install directory
+            # in order to make kconfigwidgets build
+            echo "#define KDOCTOOLS_INSTALL_DATADIR_KF5 \"$SNAPCRAFT_STAGE/share/kf5\"" >> config-kdoctools.h.cmake
+            export LD_LIBRARY_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib:$LD_LIBRARY_PATH
+            mkdir build && cd build
+            cmake -DCMAKE_PREFIX_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib/cmake/ \
+                  -DCMAKE_BUILD_TYPE=Release \
+                  -DCMAKE_INSTALL_LIBDIR=lib \
+                  -DECM_DIR=$SNAPCRAFT_STAGE/share/ECM/cmake \
+                  ..
+            make -j$(nproc)
+            make install PREFIX=$SNAPCRAFT_PART_INSTALL
+            cd ..
         after:
             - kde-dependencies
             - ki18n
             - karchive
-        build: |
-            mkdir build && cd build
-            export LD_LIBRARY_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib:$LD_LIBRARY_PATH
-            cmake -DCMAKE_PREFIX_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib/cmake/ \
-                  -DCMAKE_BUILD_TYPE=Release \
-                  -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL \
-                  -DCMAKE_INSTALL_LIBDIR=lib \
-                  -DECM_DIR=$SNAPCRAFT_STAGE/share/ECM/cmake
-            make -j$(nproc)
-            make install
-            cd ..
     # KDE dependencies
     # Dependencies for building KDE libraries
     kde-dependencies:
-        plugin: dump
+        plugin: nil
         build-packages:
             - mesa-common-dev
             - libxfixes-dev
@@ -558,11 +351,6 @@ parts:
     ecm:
         plugin: cmake
         source: https://github.com/KDE/extra-cmake-modules/archive/v5.34.0.tar.gz
-        configflags:
-            - -DCMAKE_PREFIX_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib/cmake/
-            - -DCMAKE_BUILD_TYPE=Release
-            - -DCMAKE_INSTALL_PREFIX=/
-            - -DCMAKE_INSTALL_LIBDIR=lib
         build-attributes: ["no-system-libraries"]
     # Qbs
     # Build tool
@@ -582,9 +370,11 @@ parts:
         source-type: tar
         build-attributes: ["no-system-libraries"]
         after: [qt-dependencies]
+        # https://bugreports.qt.io/browse/QTBUG-37417
+        # Qt private headers only get installed
+        # properly if an in-source build is performed
         build: |
-            mkdir build && cd build
-            ../configure \
+            ./configure \
                 -prefix $SNAPCRAFT_PART_INSTALL/lib/qt5 \
                 -bindir $SNAPCRAFT_PART_INSTALL/usr/bin \
                 -release \
@@ -624,10 +414,9 @@ parts:
                 -skip qtwebkit-examples
             make -j$(nproc)
             make install
-            cd ..
     # Qt dependencies
     qt-dependencies:
-        plugin: dump
+        plugin: nil
         # From deb packaging build deps
         build-packages:
             - g++
