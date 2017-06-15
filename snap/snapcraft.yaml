@@ -94,6 +94,21 @@ parts:
             - qbs
             - qt-gstreamer
             - liri-wayland
+    # Vibe
+    # A collection of core classes used throughout Liri
+    vibe:
+        plugin: qbs
+        source: https://github.com/lirios/vibe.git
+        build-attributes: ["no-system-libraries"]
+        after:
+            - qt
+            - qbs
+            - fluid
+            - kwallet
+            - solid
+            - networkmanager-qt
+            - modemmanager-qt
+            - polkit-qt-1
     # Material Design fonts
     fonts:
         plugin: nil

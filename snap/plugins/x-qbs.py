@@ -144,6 +144,13 @@ class QbsPlugin(snapcraft.BasePlugin):
                   self.options.qbs_build_variant,
                   'qbs.installRoot:' + self.installdir,
                   'cpp.libraryPaths:["{}"]'.format('{}/lib'.format(self.project.stage_dir)),
+                  'cpp.includePaths:["{}","{}","{}","{}","{}"]'.format(
+                      '{}/include/KF5/Solid'.format(self.project.stage_dir),
+                      '{}/include/KF5/NetworkManagerQt'.format(self.project.stage_dir),
+                      '{}/include/KF5/ModemManagerQt'.format(self.project.stage_dir),
+                      '{}/include/KF5/KWallet'.format(self.project.stage_dir),
+                      '{}/include/KF5'.format(self.project.stage_dir)
+                  ),
                   'profile:' + build_profile] + self.options.qbs_options,
                   env=env)
 
