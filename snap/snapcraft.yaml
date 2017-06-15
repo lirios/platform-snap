@@ -307,6 +307,37 @@ parts:
             - kde-dependencies
             - ki18n
             - karchive
+    # KService
+    # KDE plugin framework for desktop services
+    kservice:
+        plugin: cmake
+        source: https://github.com/KDE/kservice/archive/v5.33.0.tar.gz
+        build-attributes: ["no-system-libraries"]
+        configflags:
+            # Fix error: C++ style comments are not allowed in ISO C90
+            - -DCMAKE_C_COMPILER=clang
+        after:
+            - kde-dependencies
+            - kconfig
+            - kcoreaddons
+            - kcrash
+            - kdbusaddons
+            - ki18n
+            - kdoctools
+        build-packages:
+            - clang
+            - clang-3.8
+    # KWallet
+    # KDE's safe desktop storage framework
+    kwallet:
+        plugin: cmake
+        source: https://github.com/KDE/kwallet/archive/v5.33.0.tar.gz
+        build-attributes: ["no-system-libraries"]
+        after:
+            - kde-dependencies
+            - knotifications
+            - kiconthemes
+            - kservice
     # KDE dependencies
     # Dependencies for building KDE libraries
     kde-dependencies:
