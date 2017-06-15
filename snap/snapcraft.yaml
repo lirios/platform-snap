@@ -74,6 +74,15 @@ parts:
             - libqtxdg
             - kde-dependencies
             - qbs
+    # Liri Wayland
+    # Wayland client and server libraries for Liri OS
+    liri-wayland:
+        plugin: qbs
+        source: https://github.com/lirios/wayland.git
+        build-attributes: ["no-system-libraries"]
+        after:
+            - qt
+            - qbs
     # Material Design fonts
     fonts:
         plugin: nil
