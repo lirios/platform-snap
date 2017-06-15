@@ -39,7 +39,9 @@ parts:
         source: https://github.com/lirios/fluid.git
         plugin: qbs
         build-attributes: ["no-system-libraries"]
-        after: [qt]
+        after:
+            - qt
+            - qbs
     # libliri
     # Library for Liri apps
     libliri:
