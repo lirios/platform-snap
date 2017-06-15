@@ -51,6 +51,15 @@ parts:
         after:
             - qt
             - qbs
+    # Qt GSettings
+    # Qt wrapper for GSettings
+    qtgsettings:
+        plugin: qbs
+        source: https://github.com/lirios/qtgsettings.git
+        build-attributes: ["no-system-libraries"]
+        after:
+            - qt
+            - qbs
     # libliri
     # Library for Liri apps
     libliri:
