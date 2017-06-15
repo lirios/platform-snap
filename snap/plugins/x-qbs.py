@@ -122,6 +122,12 @@ class QbsPlugin(snapcraft.BasePlugin):
         # Setup the Qt profile.
         self.run(['qbs', 'setup-qt', qmake, build_profile], env=env)
 
+        # Add custom search paths
+        self.run([
+            'qbs', 'config', 'preferences.qbsSearchPaths',
+            '{}/share/qbs'.format(self.project.stage_dir)
+        ], env=env)
+
         # Switch buildprofile to clang if required
         # we don't need to set gcc as that is the default baseProfile
         if self.options.qbs_profile == 'clang':
@@ -137,6 +143,7 @@ class QbsPlugin(snapcraft.BasePlugin):
                   '-j', str(self.options.qbs_jobs or multiprocessing.cpu_count()),
                   self.options.qbs_build_variant,
                   'qbs.installRoot:' + self.installdir,
+                  'cpp.libraryPaths:["{}"]'.format('{}/lib'.format(self.project.stage_dir)),
                   'profile:' + build_profile] + self.options.qbs_options,
                   env=env)
 
@@ -146,9 +153,10 @@ class QbsPlugin(snapcraft.BasePlugin):
             env['QT_SELECT'] = self.options.qt_version
         env['PKG_CONFIG_PATH'] = '{0}/usr/lib/pkgconfig:{0}/usr/lib/x86_64-linux-gnu/pkgconfig:'.format(
             self.project.stage_dir
-        ) + '{0}/lib/qt5/lib/pkgconfig/'.format(
+        ) + '{0}/lib/qt5/lib/pkgconfig:{0}/lib/pkgconfig'.format(
             self.project.stage_dir
         )
+        print(env['PKG_CONFIG_PATH'])
         env['QTDIR'] = self.project.parts_dir + '/qt/install/lib/qt5/'
         env['QML_IMPORT_PATH'] = self.project.parts_dir + '/qt/install/lib/qt5/qml'
         env['QML2_IMPORT_PATH'] = self.project.parts_dir + '/qt/install/lib/qt5/qml'
