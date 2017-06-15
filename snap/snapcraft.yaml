@@ -42,6 +42,15 @@ parts:
         after:
             - qt
             - qbs
+    # Qt Accounts Service
+    # Qt-style freedesktop.org AccountsService DBus api
+    qtaccountsservice:
+        plugin: qbs
+        source: https://github.com/lirios/qtaccountsservice.git
+        build-attributes: ["no-system-libraries"]
+        after:
+            - qt
+            - qbs
     # libliri
     # Library for Liri apps
     libliri:
