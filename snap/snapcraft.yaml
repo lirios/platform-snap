@@ -83,6 +83,17 @@ parts:
         after:
             - qt
             - qbs
+    # Liri Workspace
+    # Base applications and settings for the Liri OS workspace
+    liri-workspace:
+        plugin: qbs
+        source: https://github.com/lirios/workspace.git
+        build-attributes: ["no-system-libraries"]
+        after:
+            - qt
+            - qbs
+            - qt-gstreamer
+            - liri-wayland
     # Material Design fonts
     fonts:
         plugin: nil
