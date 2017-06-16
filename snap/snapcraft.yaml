@@ -447,6 +447,26 @@ parts:
         qt-version: qt5
         project-files: [qbs.pro]
         after: [qt]
+    # Qt Conf
+    # Override hard-coded Qt paths
+    qt-conf:
+        plugin: dump
+        source: src
+        organize:
+            qt.conf: usr/bin/qt.conf
+    # Qt bin symlink
+    # Create a symbolic link to make
+    # Qt programs work properly
+    # in the snap at runtime
+    # FIXME: Remove bindir option
+    # from Qt configure instead
+    qt-bin-symlink:
+        plugin: dump
+        install: |
+            mkdir -p $SNAPCRAFT_PART_INSTALL/lib/qt5
+            ln -s /snap/liri-platform0/current/usr/bin \
+                  $SNAPCRAFT_PART_INSTALL/lib/qt5/bin
+        after: [qt]
     # Qt
     # based on https://github.com/tjyrinki/qt58
     # Thanks to Timo Jyrinki (@tjyrinki)
