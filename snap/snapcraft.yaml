@@ -28,6 +28,8 @@ parts:
         plugin: dump
         organize:
             liri-app-launch.sh: bin/liri-app-launch
+        stage:
+            - bin/liri-app-launch
     # Fluid Dialog
     fluid-dialog:
         source: src/fluid-dialog
@@ -454,6 +456,8 @@ parts:
         source: src
         organize:
             qt.conf: usr/bin/qt.conf
+        stage:
+            - usr/bin/qt.conf
     # Qt bin symlink
     # Create a symbolic link to make
     # Qt programs work properly
@@ -467,6 +471,8 @@ parts:
             ln -s /snap/liri-platform0/current/usr/bin \
                   $SNAPCRAFT_PART_INSTALL/lib/qt5/bin
         after: [qt]
+        stage:
+            - lib/qt5/bin
     # Qt
     # based on https://github.com/tjyrinki/qt58
     # Thanks to Timo Jyrinki (@tjyrinki)
