@@ -676,3 +676,23 @@ parts:
             - zlib1g
             - libdouble-conversion1v5
             - libpulse0
+    # Additional stage packages
+    # for QtWebEngine missing
+    # from the Qt part.
+    # FIXME: Merge with Qt part
+    qtwebengine-stage:
+        plugin: nil
+        stage-packages:
+            # QtWebEngine
+            - libwebpdemux1
+            - libnspr4
+            - libxcursor1
+            - libxcomposite1
+            - libxtst6
+            - libxss1
+            - libopus0
+            - libasound2
+            - libsnappy1v5
+            - libminizip1
+            - libwebp5
+            - libnss3
