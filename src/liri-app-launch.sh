@@ -226,6 +226,7 @@ export LD_LIBRARY_PATH=$RUNTIME/lib/qt5/lib:$LD_LIBRARY_PATH
 export QT_PLUGIN_PATH=$RUNTIME/lib/qt5/plugins/
 export QML2_IMPORT_PATH=$RUNTIME/lib/qml:$QML2_IMPORT_PATH
 export QML2_IMPORT_PATH=$RUNTIME/lib/qt5/qml:$QML2_IMPORT_PATH
+export QML2_IMPORT_PATH=$SNAP/lib/qml:$QML2_IMPORT_PATH
 export QT_QPA_PLATFORM_PLUGIN_PATH=$RUNTIME/lib/qt5/plugins/platforms
 # Try to use qtubuntu-print plugin, if not found Qt will fallback to the first found (usually cups plugin)
 export QT_PRINTER_MODULE=qtubuntu-print
