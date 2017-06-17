@@ -7,4 +7,31 @@ jobs:
   - name: platform-snap
     extends: snapcraft
     source: .
+    scripts:
+      perform: |
+        require('python', '3.5.0')
+        baka = require('baka', '0.1.0')
+        import os
 
+        # Fix pkg-config files prefix
+        # to point to /snap/liri-platform0/current
+        # FIXME: Find a better solution for this:
+        # If possible, moving this to snapcraft.yaml
+        # in some form would be much better.
+
+        baka.box.run(
+            'unsquashfs', '-d', 'snap-root',
+            'snapcraft_platform-snap.snap'
+        )
+
+        baka.box.run(
+            'find', 'snap-root', '-type', 'f', '-name', '"*.pc"',
+            '-exec', 'sed -i "s|^prefix=.*|prefix=/snap/liri-platform0/current|" "{}"', '\\;'
+        )
+
+        baka.box.run(
+            'mksquashfs', 'snap-root', 'snapcraft_platform-snap.snap',
+             '-noappend', '-comp', 'xz', '-no-xattrs', '-all-root',
+        )
+
+        baka.box.run('rm', '-rf', 'snap-root')
