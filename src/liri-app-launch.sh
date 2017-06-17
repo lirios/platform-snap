@@ -60,40 +60,20 @@ export XKB_CONFIG_ROOT=$RUNTIME/usr/share/X11/xkb
 # This is required for text input to work in SDL2 games.
 export XLOCALEDIR=$RUNTIME/usr/share/X11/locale
 
-# Mesa Libs for OpenGL support
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$RUNTIME/usr/lib/$ARCH/mesa
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$RUNTIME/usr/lib/$ARCH/mesa-egl
+if [ "$IS_CLASSIC" = no ]; then
+    # Mesa Libs for OpenGL support
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$RUNTIME/usr/lib/$ARCH/mesa
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$RUNTIME/usr/lib/$ARCH/mesa-egl
 
-# Tell libGL where to find the drivers
-export LIBGL_DRIVERS_PATH=$RUNTIME/usr/lib/$ARCH/dri
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LIBGL_DRIVERS_PATH
+    # Tell libGL where to find the drivers
+    export LIBGL_DRIVERS_PATH=$RUNTIME/usr/lib/$ARCH/dri
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LIBGL_DRIVERS_PATH
 
-# Workaround in snapd for proprietary nVidia drivers mounts the drivers in
-# /var/lib/snapd/lib/gl that needs to be in LD_LIBRARY_PATH
-# Without that OpenGL using apps do not work with the nVidia drivers.
-# Ref.: https://bugs.launchpad.net/snappy/+bug/1588192
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/var/lib/snapd/lib/gl
-
-# Mir
-if [ -S /run/user/$(id -u)/mir_socket ]; then
-  export MIR_SOCKET=/run/user/$(id -u)/mir_socket
-elif [ -S /run/mir_socket ]; then
-  # Fall back to global location if there is no user server (e.g. on a kiosk)
-  export MIR_SOCKET=/run/mir_socket
-fi
-if [ -d $SNAP/mir-libs/$ARCH ]; then
-  export MIR_CLIENT_PLATFORM_PATH=$SNAP/mir-libs/$ARCH/mir/client-platform
-  # Put mir-libs first because it's easy to end up with a snap-internal copy
-  export LD_LIBRARY_PATH=$SNAP/mir-libs/$ARCH:$LD_LIBRARY_PATH
-elif [ -d $RUNTIME/usr/lib/$ARCH/mir ]; then
-  # As of this writing, ubuntu-app-platform holds a copy of the Mir libraries,
-  # but may remove them in favor of mir-libs.  Use them if present.
-  # We check both RUNTIME and SNAP (below) because if the SDK does drop the
-  # libraries, we want to fall back to an internal copy transparently.
-  export MIR_CLIENT_PLATFORM_PATH=$RUNTIME/usr/lib/$ARCH/mir/client-platform
-else
-  # Fall back to internal copy.
-  export MIR_CLIENT_PLATFORM_PATH=$SNAP/usr/lib/$ARCH/mir/client-platform
+    # Workaround in snapd for proprietary nVidia drivers mounts the drivers in
+    # /var/lib/snapd/lib/gl that needs to be in LD_LIBRARY_PATH
+    # Without that OpenGL using apps do not work with the nVidia drivers.
+    # Ref.: https://bugs.launchpad.net/snappy/+bug/1588192
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/var/lib/snapd/lib/gl
 fi
 
 # Unity7 export (workaround for https://launchpad.net/bugs/1638405)
@@ -209,13 +189,6 @@ fi
 # Qt launcher specific part #
 #############################
 
-# Qt Platform to Mir
-export QTCHOOSER_NO_GLOBAL_DIR=1
-# QT_SELECT not exported by ubuntu app platform runtime
-if [ -z "$QT_SELECT" ]; then
-  export QT_SELECT=snappy-qt5
-fi
-
 # Removes Qt warning: Could not find a location
 # of the system Compose files
 export QTCOMPOSE=$RUNTIME/usr/share/X11/locale
@@ -232,13 +205,7 @@ export QT_QPA_PLATFORM_PLUGIN_PATH=$RUNTIME/lib/qt5/plugins/platforms
 export QT_PRINTER_MODULE=qtubuntu-print
 [ "$WITH_RUNTIME" = yes ] && QML2_IMPORT_PATH=$SNAP/lib/$ARCH:$SNAP/usr/lib/$ARCH/qt5/qml:$QML2_IMPORT_PATH
 PATH=$RUNTIME/lib/qt/5.8/gcc_64/bin:$PATH
-if [ -z "$DISPLAY" ] ; then
-  export QT_QPA_PLATFORM=ubuntumirclient
-else
-  # If a X11 $DISPLAY variable is set we should use it
-  export QT_QPA_PLATFORM=xcb
-fi
-
+export QT_QPA_PLATFORM=xcb
 
 # Necessary for the SDK to find the translations directory
 export APP_DIR=$SNAP
