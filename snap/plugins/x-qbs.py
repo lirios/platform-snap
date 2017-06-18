@@ -160,9 +160,9 @@ class QbsPlugin(snapcraft.BasePlugin):
             env['QT_SELECT'] = self.options.qt_version
         env['PKG_CONFIG_PATH'] = '{0}/usr/lib/pkgconfig:{0}/usr/lib/x86_64-linux-gnu/pkgconfig:'.format(
             self.project.stage_dir
-        ) + '{0}/lib/qt5/lib/pkgconfig:{0}/lib/pkgconfig'.format(
+        ) + '{0}/lib/qt5/lib/pkgconfig:{0}/lib/pkgconfig:'.format(
             self.project.stage_dir
-        )
+        ) + '/usr/lib/x86_64-linux-gnu/pkgconfig'
         print(env['PKG_CONFIG_PATH'])
         env['QTDIR'] = self.project.parts_dir + '/qt/install/lib/qt5/'
         env['QML_IMPORT_PATH'] = self.project.parts_dir + '/qt/install/lib/qt5/qml'
