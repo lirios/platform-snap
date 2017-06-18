@@ -702,3 +702,6 @@ parts:
             - libminizip1
             - libwebp5
             - libnss3
+            - libevent-2.0-5
+            - libxml2
+            - libxslt1.1
