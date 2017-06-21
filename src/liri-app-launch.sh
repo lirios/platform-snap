@@ -94,7 +94,7 @@ export XDG_CONFIG_DIRS=$RUNTIME/etc/xdg:$RUNTIME/usr/xdg:$XDG_CONFIG_DIRS
 [ "$WITH_RUNTIME" = yes ] && XDG_CONFIG_DIRS=$SNAP/etc/xdg:$SNAP/usr/xdg:$XDG_CONFIG_DIRS # add local SNAP assets if a runtime is used
 
 # Define snaps' own data dir
-export XDG_DATA_DIRS=$SNAP_USER_DATA:$RUNTIME/usr/share:$XDG_DATA_DIRS
+export XDG_DATA_DIRS=$SNAP_USER_DATA:$RUNTIME/usr/share:$SNAP/share:$XDG_DATA_DIRS
 [ "$WITH_RUNTIME" = yes ] && XDG_DATA_DIRS=$SNAP_USER_DATA:$SNAP/usr/share:$XDG_DATA_DIRS # add local SNAP assets if a runtime is used
 
 # Set XDG_DATA_HOME to local path
