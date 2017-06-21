@@ -85,17 +85,6 @@ parts:
         after:
             - qt
             - qbs
-    # Liri Workspace
-    # Base applications and settings for the Liri OS workspace
-    liri-workspace:
-        plugin: qbs
-        source: https://github.com/lirios/workspace.git
-        build-attributes: ["no-system-libraries"]
-        after:
-            - qt
-            - qbs
-            - qt-gstreamer
-            - liri-wayland
     # Vibe
     # A collection of core classes used throughout Liri
     vibe:
@@ -105,6 +94,7 @@ parts:
         after:
             - qt
             - qbs
+            - libliri
             - fluid
             - kwallet
             - solid
@@ -187,10 +177,16 @@ parts:
         source: https://github.com/KDE/polkit-qt-1/archive/v0.112.0.tar.gz
         build-attributes: ["no-system-libraries"]
         configflags:
-            # polkit-qt-1 needs special treatment:
-            - -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL
+            # Use a custom prefix in order to
+            # fix empty include path CMake errors
+            # in parts depending on polkit-qt-1
             - -DCMAKE_INSTALL_FULL_INCLUDEDIR=$SNAPCRAFT_PART_INSTALL/include
+            - -DCMAKE_INSTALL_PREFIX=/usr/local
         after: [kde-dependencies]
+        install: |
+            # Fix path handling in polkit-qt-1 CMake files
+            sed -i -e 's/if(_realCurr STREQUAL _realOrig)/if(1)/g' \
+                PolkitQt5-1Config.cmake
     # KI18n
     # KDE Gettext-based UI text internationalization
     ki18n:
@@ -455,24 +451,10 @@ parts:
         plugin: dump
         source: src
         organize:
-            qt.conf: usr/bin/qt.conf
+            qt.conf: lib/qt5/bin/qt.conf
         stage:
-            - usr/bin/qt.conf
-    # Qt bin symlink
-    # Create a symbolic link to make
-    # Qt programs work properly
-    # in the snap at runtime
-    # FIXME: Remove bindir option
-    # from Qt configure instead
-    qt-bin-symlink:
-        plugin: dump
-        install: |
-            mkdir -p $SNAPCRAFT_PART_INSTALL/lib/qt5
-            ln -s /snap/liri-platform0/current/usr/bin \
-                  $SNAPCRAFT_PART_INSTALL/lib/qt5/bin
+            - lib/qt5/bin/qt.conf
         after: [qt]
-        stage:
-            - lib/qt5/bin
     # Qt
     # based on https://github.com/tjyrinki/qt58
     # Thanks to Timo Jyrinki (@tjyrinki)
@@ -488,7 +470,6 @@ parts:
         build: |
             ./configure \
                 -prefix $SNAPCRAFT_PART_INSTALL/lib/qt5 \
-                -bindir $SNAPCRAFT_PART_INSTALL/usr/bin \
                 -release \
                 -confirm-license \
                 -opensource \
@@ -682,13 +663,6 @@ parts:
             - zlib1g
             - libdouble-conversion1v5
             - libpulse0
-    # Additional stage packages
-    # for QtWebEngine missing
-    # from the Qt part.
-    # FIXME: Merge with Qt part
-    qtwebengine-stage:
-        plugin: nil
-        stage-packages:
             # QtWebEngine
             - libwebpdemux1
             - libnspr4

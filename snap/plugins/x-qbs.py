@@ -117,7 +117,7 @@ class QbsPlugin(snapcraft.BasePlugin):
             self.options.qt_version,
             self.options.qbs_profile)
 
-        qmake = self.project.parts_dir + '/qt/install/usr/bin/qmake'
+        qmake = self.project.parts_dir + '/qt/install/lib/qt5/bin/qmake'
 
         # Setup the Qt profile.
         self.run(['qbs', 'setup-qt', qmake, build_profile], env=env)
@@ -143,13 +143,17 @@ class QbsPlugin(snapcraft.BasePlugin):
                   '-j', str(self.options.qbs_jobs or multiprocessing.cpu_count()),
                   self.options.qbs_build_variant,
                   'qbs.installRoot:' + self.installdir,
-                  'cpp.libraryPaths:["{}"]'.format('{}/lib'.format(self.project.stage_dir)),
-                  'cpp.includePaths:["{}","{}","{}","{}","{}"]'.format(
+                  'cpp.libraryPaths:["{}","{}"]'.format(
+                      '{}/lib'.format(self.project.stage_dir),
+                      '{}/usr/local/lib'.format(self.project.stage_dir)
+                  ),
+                  'cpp.includePaths:["{}","{}","{}","{}","{}", "{}"]'.format(
                       '{}/include/KF5/Solid'.format(self.project.stage_dir),
                       '{}/include/KF5/NetworkManagerQt'.format(self.project.stage_dir),
                       '{}/include/KF5/ModemManagerQt'.format(self.project.stage_dir),
                       '{}/include/KF5/KWallet'.format(self.project.stage_dir),
-                      '{}/include/KF5'.format(self.project.stage_dir)
+                      '{}/include/KF5'.format(self.project.stage_dir),
+                      '{}/usr/local/include/polkit-qt5-1'.format(self.project.stage_dir)
                   ),
                   'profile:' + build_profile] + self.options.qbs_options,
                   env=env)
@@ -169,7 +173,7 @@ class QbsPlugin(snapcraft.BasePlugin):
         env['QML2_IMPORT_PATH'] = self.project.parts_dir + '/qt/install/lib/qt5/qml'
         env['LD_LIBRARY_PATH'] = self.project.parts_dir + '/qt/install/lib/qt5/lib:' + \
                                  self.project.parts_dir + '/qbs/install/usr/local/lib'
-        env['PATH'] = self.project.parts_dir + '/qt/install/usr/bin/:' \
+        env['PATH'] = self.project.parts_dir + '/qt/install/lib/qt5/bin/:' \
                       + self.project.parts_dir + '/qbs/install/usr/local/bin:' + \
                       os.environ["PATH"]
         return env
