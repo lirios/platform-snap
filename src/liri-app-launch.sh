@@ -63,7 +63,7 @@ export XKB_CONFIG_ROOT=$RUNTIME/usr/share/X11/xkb
 # This is required for text input to work in SDL2 games.
 export XLOCALEDIR=$RUNTIME/usr/share/X11/locale
 
-if [ "$IS_CLASSIC" = no ]; then
+if [ -z "$SNAP_IS_CLASSIC" ] ; then
     # Mesa Libs for OpenGL support
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$RUNTIME/usr/lib/$ARCH/mesa
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$RUNTIME/usr/lib/$ARCH/mesa-egl
