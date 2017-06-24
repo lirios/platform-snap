@@ -463,15 +463,25 @@ parts:
         qt-version: qt5
         project-files: [qbs.pro]
         after: [qt]
-    # Qt Conf
+    # Qt Conf (bin)
     # Override hard-coded Qt paths
-    qt-conf:
+    qt-conf-bin:
         plugin: dump
         source: src
         organize:
             qt.conf: lib/qt5/bin/qt.conf
         stage:
             - lib/qt5/bin/qt.conf
+        after: [qt]
+    # Qt Conf (libexec)
+    # Override hard-coded Qt paths
+    qt-conf-libexec:
+        plugin: dump
+        source: src
+        organize:
+            qt.conf: lib/qt5/libexec/qt.conf
+        stage:
+            - lib/qt5/libexec/qt.conf
         after: [qt]
     # Qt
     # based on https://github.com/tjyrinki/qt58
