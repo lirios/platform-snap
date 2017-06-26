@@ -77,6 +77,11 @@ if [ -z "$SNAP_IS_CLASSIC" ] ; then
     # Without that OpenGL using apps do not work with the nVidia drivers.
     # Ref.: https://bugs.launchpad.net/snappy/+bug/1588192
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/var/lib/snapd/lib/gl
+else
+    # Workaround for classic snap not finding NVidia drivers.
+    # FIXME: This workaround will not work on all distributions.
+    export LIBGL_DRIVERS_PATH=/usr/lib/$ARCH/dri
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LIBGL_DRIVERS_PATH
 fi
 
 # Unity7 export (workaround for https://launchpad.net/bugs/1638405)
