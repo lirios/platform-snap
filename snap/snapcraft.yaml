@@ -448,6 +448,9 @@ parts:
             - xorg-dev
             - modemmanager-dev
             # - libflatpak-dev (not available on Ubuntu 16.04)
+        stage-packages:
+            - libxcb-cursor0
+            - libxcb-composite0
         after: [ecm, qt]
     # ECM (Extra CMake Modules)
     # Newer version needed than currently
