@@ -109,6 +109,8 @@ parts:
         qbs-options:
             - lirideployment.qmlDir:lib/qt5/qml
             - lirideployment.pluginsDir:lib/qt5/plugins
+            # Fix undefined symbol errors in QML plugins
+            - cpp.dynamicLibraries:["KF5NetworkManagerQt","KF5ModemManagerQt","KF5Solid","KF5Wallet"]
         after:
             - qt
             - qbs
