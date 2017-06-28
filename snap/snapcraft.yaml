@@ -142,27 +142,6 @@ parts:
         source: https://github.com/lxde/libqtxdg/archive/2.0.0.tar.gz
         build-attributes: ["no-system-libraries"]
         after: [qt]
-    # NetworkManagerQt
-    # Qt wrapper for NetworkManager API
-    networkmanager-qt:
-        plugin: cmake
-        source: https://github.com/KDE/networkmanager-qt/archive/v5.34.0.tar.gz
-        build-attributes: ["no-system-libraries"]
-        after: [kde-dependencies]
-    # ModemManagerQt
-    # Qt wrapper for ModemManager DBus API
-    modemmanager-qt:
-        plugin: cmake
-        source: https://github.com/KDE/modemmanager-qt/archive/v5.34.0.tar.gz
-        build-attributes: ["no-system-libraries"]
-        after: [kde-dependencies]
-    # KDE Solid
-    # Desktop hardware abstraction framework
-    solid:
-        plugin: cmake
-        source: https://github.com/KDE/solid/archive/v5.34.0.tar.gz
-        build-attributes: ["no-system-libraries"]
-        after: [kde-dependencies]
     # Qt GStreamer
     qt-gstreamer:
         plugin: cmake
@@ -207,18 +186,59 @@ parts:
             # Fix path handling in polkit-qt-1 CMake files
             sed -i -e 's/if(_realCurr STREQUAL _realOrig)/if(1)/g' \
                 PolkitQt5-1Config.cmake
+    # Phonon
+    # Multimedia library
+    phonon:
+        plugin: cmake
+        source: https://github.com/KDE/phonon
+        source-type: git
+        source-commit: 06a795aa00fea1c0a0b75c9daf0cbdf2f4ca9984
+        build-attributes: ["no-system-libraries"]
+        after: [kde-dependencies]
+        configflags:
+            - -DPHONON_BUILD_PHONON4QT5=ON
+    # KDE Frameworks 5 meta
+    kf5-meta: &kf5-meta
+        plugin: nil
+        source-tag: v5.34.0
+    # NetworkManagerQt
+    # Qt wrapper for NetworkManager API
+    networkmanager-qt:
+        <<: *kf5-meta
+        plugin: cmake
+        source: https://github.com/KDE/networkmanager-qt.git
+        build-attributes: ["no-system-libraries"]
+        after: [kde-dependencies]
+    # ModemManagerQt
+    # Qt wrapper for ModemManager DBus API
+    modemmanager-qt:
+        <<: *kf5-meta
+        plugin: cmake
+        source: https://github.com/KDE/modemmanager-qt.git
+        build-attributes: ["no-system-libraries"]
+        after: [kde-dependencies]
+    # KDE Solid
+    # Desktop hardware abstraction framework
+    solid:
+        <<: *kf5-meta
+        plugin: cmake
+        source: https://github.com/KDE/solid.git
+        build-attributes: ["no-system-libraries"]
+        after: [kde-dependencies]
     # KI18n
     # KDE Gettext-based UI text internationalization
     ki18n:
+        <<: *kf5-meta
         plugin: cmake
-        source: https://github.com/KDE/ki18n/archive/v5.34.0.tar.gz
+        source: https://github.com/KDE/ki18n.git
         build-attributes: ["no-system-libraries"]
         after: [kde-dependencies]
     # KConfig
     # KDE's platform-independent settings library
     kconfig:
+        <<: *kf5-meta
         plugin: cmake
-        source: https://github.com/KDE/kconfig/archive/v5.34.0.tar.gz
+        source: https://github.com/KDE/kconfig.git
         build-attributes: ["no-system-libraries"]
         after:
             - kde-dependencies
@@ -227,22 +247,25 @@ parts:
     # KCoreAddons
     # Collection of non-GUI utilities for Qt
     kcoreaddons:
+        <<: *kf5-meta
         plugin: cmake
-        source: https://github.com/KDE/kcoreaddons/archive/v5.34.0.tar.gz
+        source: https://github.com/KDE/kcoreaddons.git
         build-attributes: ["no-system-libraries"]
         after: [kde-dependencies]
     # KWindowSystem
     # KDE window system access
     kwindowsystem:
+        <<: *kf5-meta
         plugin: cmake
-        source: https://github.com/KDE/kwindowsystem/archive/v5.34.0.tar.gz
+        source: https://github.com/KDE/kwindowsystem.git
         build-attributes: ["no-system-libraries"]
         after: [kde-dependencies]
     # KAuth
     # KDE authentication library
     kauth:
+        <<: *kf5-meta
         plugin: cmake
-        source: https://github.com/KDE/kauth/archive/v5.34.0.tar.gz
+        source: https://github.com/KDE/kauth.git
         build-attributes: ["no-system-libraries"]
         after:
             - kde-dependencies
@@ -251,29 +274,33 @@ parts:
     # KCodecs
     # KDE string encoding library
     kcodecs:
+        <<: *kf5-meta
         plugin: cmake
-        source: https://github.com/KDE/kcodecs/archive/v5.34.0.tar.gz
+        source: https://github.com/KDE/kcodecs.git
         build-attributes: ["no-system-libraries"]
         after: [kde-dependencies]
     # KDE GUI Addons
     # KDE Utilities for graphical user interfaces
     kguiaddons:
+        <<: *kf5-meta
         plugin: cmake
-        source: https://github.com/KDE/kguiaddons/archive/v5.34.0.tar.gz
+        source: https://github.com/KDE/kguiaddons.git
         build-attributes: ["no-system-libraries"]
         after: [kde-dependencies]
     # KWidgetsAddons
     # Large set of desktop widgets
     kwidgetsaddons:
+        <<: *kf5-meta
         plugin: cmake
-        source: https://github.com/KDE/kwidgetsaddons/archive/v5.34.0.tar.gz
+        source: https://github.com/KDE/kwidgetsaddons.git
         build-attributes: ["no-system-libraries"]
         after: [kde-dependencies]
     # KConfigWidgets
     # Widgets for configuration dialogs
     kconfigwidgets:
+        <<: *kf5-meta
         plugin: cmake
-        source: https://github.com/KDE/kconfigwidgets/archive/v5.34.0.tar.gz
+        source: https://github.com/KDE/kconfigwidgets.git
         build-attributes: ["no-system-libraries"]
         after:
             - kde-dependencies
@@ -288,29 +315,33 @@ parts:
     # KDBusAddons
     # KDE convenience classes for DBus
     kdbusaddons:
+        <<: *kf5-meta
         plugin: cmake
-        source: https://github.com/KDE/kdbusaddons/archive/v5.34.0.tar.gz
+        source: https://github.com/KDE/kdbusaddons.git
         build-attributes: ["no-system-libraries"]
         after: [kde-dependencies]
     # KArchive
     # KDE archive access library
     karchive:
+        <<: *kf5-meta
         plugin: cmake
-        source: https://github.com/KDE/karchive/archive/v5.34.0.tar.gz
+        source: https://github.com/KDE/karchive.git
         build-attributes: ["no-system-libraries"]
         after: [kde-dependencies]
     # KItemViews
     # KDE model-view items framework
     kitemviews:
+        <<: *kf5-meta
         plugin: cmake
-        source: https://github.com/KDE/kitemviews/archive/v5.34.0.tar.gz
+        source: https://github.com/KDE/kitemviews.git
         build-attributes: ["no-system-libraries"]
         after: [kde-dependencies]
     # KIconThemes
     # KDE icon GUI utilities
     kiconthemes:
+        <<: *kf5-meta
         plugin: cmake
-        source: https://github.com/KDE/kiconthemes/archive/v5.34.0.tar.gz
+        source: https://github.com/KDE/kiconthemes.git
         build-attributes: ["no-system-libraries"]
         after:
             - kde-dependencies
@@ -320,22 +351,12 @@ parts:
             - kconfigwidgets
             - kwidgetsaddons
             - kitemviews
-    # Phonon
-    # Multimedia library
-    phonon:
-        plugin: cmake
-        source: https://github.com/KDE/phonon
-        source-type: git
-        source-commit: 06a795aa00fea1c0a0b75c9daf0cbdf2f4ca9984
-        build-attributes: ["no-system-libraries"]
-        after: [kde-dependencies]
-        configflags:
-            - -DPHONON_BUILD_PHONON4QT5=ON
     # KNotifications
     # KDE desktop notifications
     knotifications:
+        <<: *kf5-meta
         plugin: cmake
-        source: https://github.com/KDE/knotifications/archive/v5.34.0.tar.gz
+        source: https://github.com/KDE/knotifications.git
         build-attributes: ["no-system-libraries"]
         after:
             - kde-dependencies
@@ -347,8 +368,9 @@ parts:
     # KCrash
     # KDE application crash helpers
     kcrash:
+        <<: *kf5-meta
         plugin: cmake
-        source: https://github.com/KDE/kcrash/archive/v5.34.0.tar.gz
+        source: https://github.com/KDE/kcrash.git
         build-attributes: ["no-system-libraries"]
         after:
             - kde-dependencies
@@ -357,8 +379,9 @@ parts:
     # KDocTools
     # KDE documentation generation tools
     kdoctools:
+        <<: *kf5-meta
         plugin: cmake
-        source: https://github.com/KDE/kdoctools/archive/v5.34.0.tar.gz
+        source: https://github.com/KDE/kdoctools.git
         build-attributes: ["no-system-libraries"]
         build: |
             # Ugly hack to set correct install directory
@@ -381,8 +404,9 @@ parts:
     # KService
     # KDE plugin framework for desktop services
     kservice:
+        <<: *kf5-meta
         plugin: cmake
-        source: https://github.com/KDE/kservice/archive/v5.33.0.tar.gz
+        source: https://github.com/KDE/kservice.git
         build-attributes: ["no-system-libraries"]
         configflags:
             # Fix error: C++ style comments are not allowed in ISO C90
@@ -401,14 +425,23 @@ parts:
     # KWallet
     # KDE's safe desktop storage framework
     kwallet:
+        <<: *kf5-meta
         plugin: cmake
-        source: https://github.com/KDE/kwallet/archive/v5.33.0.tar.gz
+        source: https://github.com/KDE/kwallet.git
         build-attributes: ["no-system-libraries"]
         after:
             - kde-dependencies
             - knotifications
             - kiconthemes
             - kservice
+    # ECM (Extra CMake Modules)
+    # Newer version needed than currently
+    # available in Ubuntu archives
+    ecm:
+        <<: *kf5-meta
+        plugin: cmake
+        source: https://github.com/KDE/extra-cmake-modules.git
+        build-attributes: ["no-system-libraries"]
     # KDE dependencies
     # Dependencies for building KDE libraries
     kde-dependencies:
@@ -452,13 +485,6 @@ parts:
             - libxcb-cursor0
             - libxcb-composite0
         after: [ecm, qt]
-    # ECM (Extra CMake Modules)
-    # Newer version needed than currently
-    # available in Ubuntu archives
-    ecm:
-        plugin: cmake
-        source: https://github.com/KDE/extra-cmake-modules/archive/v5.34.0.tar.gz
-        build-attributes: ["no-system-libraries"]
     # Qbs
     # Build tool
     qbs:
