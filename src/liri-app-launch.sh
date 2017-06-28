@@ -81,7 +81,7 @@ if [ -z "$SNAP_IS_CLASSIC" ] ; then
 else
     # Workaround for classic snap not finding NVidia drivers.
     # FIXME: This workaround will not work on all distributions.
-    export LIBGL_DRIVERS_PATH=/usr/lib/$ARCH/dri
+    export LIBGL_DRIVERS_PATH=$RUNTIME/usr/lib/$ARCH/dri:/usr/lib/$ARCH/dri
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LIBGL_DRIVERS_PATH
 fi
 
