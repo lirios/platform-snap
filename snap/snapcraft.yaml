@@ -59,6 +59,7 @@ parts:
         after:
             - qt
             - qbs
+            - qbs-shared
     # Qt GSettings
     # Qt wrapper for GSettings
     qtgsettings:
@@ -88,6 +89,7 @@ parts:
             - libqtxdg
             - kde-dependencies
             - qbs
+            - qbs-shared
     # Liri Wayland
     # Wayland client and server libraries for Liri OS
     liri-wayland:
@@ -100,6 +102,7 @@ parts:
         after:
             - qt
             - qbs
+            - qbs-shared
     # Vibe
     # A collection of core classes used throughout Liri
     vibe:
@@ -114,6 +117,7 @@ parts:
         after:
             - qt
             - qbs
+            - qbs-shared
             - libliri
             - fluid
             - kwallet
@@ -121,6 +125,15 @@ parts:
             - networkmanager-qt
             - modemmanager-qt
             - polkit-qt-1
+    # Qbs Shared
+    # Shared imports and modules for Liri Qbs projects
+    qbs-shared:
+        plugin: qbs
+        source: https://github.com/lirios/qbs-shared.git
+        build-attributes: ["no-system-libraries"]
+        after:
+            - qt
+            - qbs
     # Material Design fonts
     fonts:
         plugin: nil
