@@ -151,7 +151,3 @@ Makefile*
 
 # QtCtreator CMake
 CMakeLists.txt.user*
-
-# Baka artifacts
-.baka/
-
