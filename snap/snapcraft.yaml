@@ -502,7 +502,7 @@ parts:
     # Build tool
     qbs:
         plugin: qmake
-        source: https://github.com/qt-labs/qbs/archive/v1.8.0.tar.gz
+        source: https://github.com/qbs/qbs/archive/v1.9.0.tar.gz
         build-attributes: ["no-system-libraries"]
         qt-version: qt5
         project-files: [qbs.pro]
