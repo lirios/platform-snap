@@ -42,8 +42,8 @@ parts:
         plugin: qbs
         build-attributes: ["no-system-libraries"]
         qbs-options:
-            - lirideployment.qmlDir:lib/qt5/qml
-            - lirideployment.pluginsDir:lib/qt5/plugins
+            - projects.lirideployment.qmlDir:lib/qt5/qml
+            - projects.lirideployment.pluginsDir:lib/qt5/plugins
         after:
             - qt
             - qbs
@@ -54,8 +54,8 @@ parts:
         source: https://github.com/lirios/qtaccountsservice.git
         build-attributes: ["no-system-libraries"]
         qbs-options:
-            - lirideployment.qmlDir:lib/qt5/qml
-            - lirideployment.pluginsDir:lib/qt5/plugins
+            - projects.lirideployment.qmlDir:lib/qt5/qml
+            - projects.lirideployment.pluginsDir:lib/qt5/plugins
         after:
             - qt
             - qbs
@@ -67,8 +67,8 @@ parts:
         source: https://github.com/lirios/qtgsettings.git
         build-attributes: ["no-system-libraries"]
         qbs-options:
-            - lirideployment.qmlDir:lib/qt5/qml
-            - lirideployment.pluginsDir:lib/qt5/plugins
+            - projects.lirideployment.qmlDir:lib/qt5/qml
+            - projects.lirideployment.pluginsDir:lib/qt5/plugins
         after:
             - qt
             - qbs
@@ -83,8 +83,8 @@ parts:
         # in LXC containers
         qbs-jobs: 1
         qbs-options:
-            - lirideployment.qmlDir:lib/qt5/qml
-            - lirideployment.pluginsDir:lib/qt5/plugins
+            - projects.lirideployment.qmlDir:lib/qt5/qml
+            - projects.lirideployment.pluginsDir:lib/qt5/plugins
         after:
             - libqtxdg
             - kde-dependencies
@@ -97,8 +97,8 @@ parts:
         source: https://github.com/lirios/wayland.git
         build-attributes: ["no-system-libraries"]
         qbs-options:
-            - lirideployment.qmlDir:lib/qt5/qml
-            - lirideployment.pluginsDir:lib/qt5/plugins
+            - projects.lirideployment.qmlDir:lib/qt5/qml
+            - projects.lirideployment.pluginsDir:lib/qt5/plugins
         after:
             - qt
             - qbs
@@ -110,10 +110,8 @@ parts:
         source: https://github.com/lirios/vibe.git
         build-attributes: ["no-system-libraries"]
         qbs-options:
-            - lirideployment.qmlDir:lib/qt5/qml
-            - lirideployment.pluginsDir:lib/qt5/plugins
-            # Fix undefined symbol errors in QML plugins
-            - cpp.dynamicLibraries:["KF5NetworkManagerQt","KF5ModemManagerQt","KF5Solid","KF5Wallet"]
+            - projects.lirideployment.qmlDir:lib/qt5/qml
+            - projects.lirideployment.pluginsDir:lib/qt5/plugins
         after:
             - qt
             - qbs
