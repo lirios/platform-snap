@@ -125,7 +125,7 @@ class QbsPlugin(snapcraft.BasePlugin):
         # Add custom search paths
         self.run([
             'qbs', 'config', 'preferences.qbsSearchPaths',
-            '{}/share/qbs'.format(self.project.stage_dir)
+            '{}/usr/share/qbs'.format(self.project.stage_dir)
         ], env=env)
 
         # Switch buildprofile to clang if required
@@ -143,6 +143,7 @@ class QbsPlugin(snapcraft.BasePlugin):
                   '-j', str(self.options.qbs_jobs or multiprocessing.cpu_count()),
                   self.options.qbs_build_variant,
                   'qbs.installRoot:' + self.installdir,
+                  'qbs.installPrefix:usr',
                   'profile:' + build_profile] + self.options.qbs_options,
                   env=env)
 
