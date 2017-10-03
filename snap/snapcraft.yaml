@@ -188,17 +188,24 @@ parts:
         plugin: cmake
         source: https://github.com/KDE/polkit-qt-1/archive/v0.112.0.tar.gz
         build-attributes: ["no-system-libraries"]
+        # polkit-qt-1's CMake doesn't get the paths right when it's
+        # installed with DESTDIR set.
+        # As a workaround, don't use DESTDIR (default make-install-var)
+        # And use CMAKE_INSTALL_PREFIX to set the the whole path
+        make-install-var: IGNORE
         configflags:
-            # Use a custom prefix in order to
-            # fix empty include path CMake errors
-            # in parts depending on polkit-qt-1
-            - -DCMAKE_INSTALL_FULL_INCLUDEDIR=$SNAPCRAFT_PART_INSTALL/include
-            - -DCMAKE_INSTALL_PREFIX=/usr/local
+            - -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
         after: [kde-dependencies]
         install: |
-            # Fix path handling in polkit-qt-1 CMake files
-            sed -i -e 's/if(_realCurr STREQUAL _realOrig)/if(1)/g' \
-                PolkitQt5-1Config.cmake
+            # Fix polkit-qt's broken pkgconfig path handling.
+            # Note that snapcraft changes the "prefix" to the stage
+            # dir automatically.
+            sed -i -e 's|exec_prefix=/.*|exec_prefix=${prefix}|g' \
+                $SNAPCRAFT_PART_INSTALL/usr/lib/pkgconfig/polkit-qt5-1.pc
+            sed -i -e 's|libdir=/.*|libdir=${prefix}/lib|g' \
+                $SNAPCRAFT_PART_INSTALL/usr/lib/pkgconfig/polkit-qt5-1.pc
+            sed -i -e 's|includedir=/.*|includedir=${prefix}/include/polkit-qt5-1|g' \
+                $SNAPCRAFT_PART_INSTALL/usr/lib/pkgconfig/polkit-qt5-1.pc
     # Phonon
     # Multimedia library
     phonon:
