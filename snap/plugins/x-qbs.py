@@ -117,7 +117,7 @@ class QbsPlugin(snapcraft.BasePlugin):
             self.options.qt_version,
             self.options.qbs_profile)
 
-        qmake = self.project.parts_dir + '/qt/install/lib/qt5/bin/qmake'
+        qmake = self.project.stage_dir + '/lib/qt5/bin/qmake'
 
         # Setup the Qt profile.
         self.run(['qbs', 'setup-qt', qmake, build_profile], env=env)
@@ -143,18 +143,6 @@ class QbsPlugin(snapcraft.BasePlugin):
                   '-j', str(self.options.qbs_jobs or multiprocessing.cpu_count()),
                   self.options.qbs_build_variant,
                   'qbs.installRoot:' + self.installdir,
-                  'cpp.libraryPaths:["{}","{}"]'.format(
-                      '{}/lib'.format(self.project.stage_dir),
-                      '{}/usr/local/lib'.format(self.project.stage_dir)
-                  ),
-                  'cpp.includePaths:["{}","{}","{}","{}","{}", "{}"]'.format(
-                      '{}/include/KF5/Solid'.format(self.project.stage_dir),
-                      '{}/include/KF5/NetworkManagerQt'.format(self.project.stage_dir),
-                      '{}/include/KF5/ModemManagerQt'.format(self.project.stage_dir),
-                      '{}/include/KF5/KWallet'.format(self.project.stage_dir),
-                      '{}/include/KF5'.format(self.project.stage_dir),
-                      '{}/usr/local/include/polkit-qt5-1'.format(self.project.stage_dir)
-                  ),
                   'profile:' + build_profile] + self.options.qbs_options,
                   env=env)
 
@@ -167,13 +155,16 @@ class QbsPlugin(snapcraft.BasePlugin):
         ) + '{0}/lib/qt5/lib/pkgconfig:{0}/lib/pkgconfig:'.format(
             self.project.stage_dir
         ) + '/usr/lib/x86_64-linux-gnu/pkgconfig'
-        print(env['PKG_CONFIG_PATH'])
-        env['QTDIR'] = self.project.parts_dir + '/qt/install/lib/qt5/'
-        env['QML_IMPORT_PATH'] = self.project.parts_dir + '/qt/install/lib/qt5/qml'
-        env['QML2_IMPORT_PATH'] = self.project.parts_dir + '/qt/install/lib/qt5/qml'
-        env['LD_LIBRARY_PATH'] = self.project.parts_dir + '/qt/install/lib/qt5/lib:' + \
-                                 self.project.parts_dir + '/qbs/install/usr/local/lib'
-        env['PATH'] = self.project.parts_dir + '/qt/install/lib/qt5/bin/:' \
-                      + self.project.parts_dir + '/qbs/install/usr/local/bin:' + \
+        env['QTDIR'] = self.project.stage_dir + '/lib/qt5/'
+        env['QML_IMPORT_PATH'] = self.project.stage_dir + '/lib/qt5/qml'
+        env['QML2_IMPORT_PATH'] = self.project.stage_dir + '/lib/qt5/qml'
+        env['LD_LIBRARY_PATH'] = self.project.stage_dir + '/lib/qt5/lib:' + \
+                                 self.project.stage_dir + '/usr/local/lib:' + \
+                                 self.project.stage_dir + '/lib'
+        env['LIBRARY_PATH'] = env['LD_LIBRARY_PATH']
+        print(env['LD_LIBRARY_PATH'])
+        env['PATH'] = self.project.stage_dir + '/lib/qt5/bin/:' \
+                      + self.project.stage_dir + '/usr/local/bin:' + \
                       os.environ["PATH"]
+        env['LIRI_INCLUDE_PREFIX'] = self.project.stage_dir + '/usr'
         return env
