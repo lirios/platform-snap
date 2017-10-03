@@ -84,7 +84,7 @@ class CMakePlugin(snapcraft.plugins.make.MakePlugin):
         ]
 
         self.run(
-            ['cmake', sourcedir, '-DCMAKE_INSTALL_PREFIX=/'] +
+            ['cmake', sourcedir, '-DCMAKE_INSTALL_PREFIX=/usr'] +
             cmake_default_configflags + self.options.configflags, env=env
         )
 
