@@ -202,9 +202,8 @@ export QTCOMPOSE=$RUNTIME/usr/share/X11/locale
 # Qt Libs, Modules and helpers
 export LD_LIBRARY_PATH=$RUNTIME/lib/qt5/lib:$LD_LIBRARY_PATH
 export QT_PLUGIN_PATH=$RUNTIME/lib/qt5/plugins/
-export QML2_IMPORT_PATH=$RUNTIME/lib/qml:$QML2_IMPORT_PATH
+export QML2_IMPORT_PATH=$RUNTIME/usr/lib/qml:$QML2_IMPORT_PATH
 export QML2_IMPORT_PATH=$RUNTIME/lib/qt5/qml:$QML2_IMPORT_PATH
-export QML2_IMPORT_PATH=$SNAP/lib/qml:$QML2_IMPORT_PATH
 export QT_QPA_PLATFORM_PLUGIN_PATH=$RUNTIME/lib/qt5/plugins/platforms
 export QT_QPA_PLATFORM_PLUGIN_PATH=$RUNTIME/lib/plugins/platforms:$QT_QPA_PLATFORM_PLUGIN_PATH
 [ "$WITH_RUNTIME" = yes ] && QML2_IMPORT_PATH=$SNAP/lib/$ARCH:$SNAP/usr/lib/$ARCH/qt5/qml:$QML2_IMPORT_PATH
