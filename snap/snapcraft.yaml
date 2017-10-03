@@ -171,14 +171,14 @@ parts:
             mkdir build && cd build
             cmake -DCMAKE_PREFIX_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib/cmake/ \
                   -DCMAKE_BUILD_TYPE=Release \
-                  -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL \
+                  -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr \
                   -DCMAKE_INSTALL_LIBDIR=lib \
                   -DECM_DIR=$SNAPCRAFT_STAGE/share/ECM/cmake \
                   -DUSE_QT_PLUGIN_DIR=OFF \
                   -DQT_VERSION=5 \
                   ..
             make -j$(nproc)
-            make install PREFIX=$SNAPCRAFT_PART_INSTALL
+            make install
             cd ..
     # polkit-qt-1
     # Qt wrapper around polkit-1 client libraries
