@@ -110,6 +110,9 @@ ENV/
 # PyCharm project settings
 .idea
 
+# vscode project settings
+.vscode
+
 # ------ #
 # Qt     #
 # ------ #
