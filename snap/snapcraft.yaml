@@ -1,5 +1,7 @@
-name: liri-platform0
-version: '0.10.0'
+name: liri-platform-0-9
+version: script
+version-script: |
+    echo $(date '+%Y%m%d')-$(git rev-parse --short HEAD)
 summary: Liri Platform for sharing common libraries used by Liri products
 description: |
     The Liri Platform provides a set of libraries that can be used by
@@ -9,7 +11,7 @@ confinement: strict
 
 slots:
     platform:
-        content: liri-platform0
+        content: liri-platform
         interface: content
         read: [.]
 
@@ -32,12 +34,6 @@ parts:
             - bin/liri-app-launch
         after:
             - desktop-glib-only
-    # Fluid Dialog
-    fluid-dialog:
-        source: src/fluid-dialog
-        plugin: qmake
-        qt-version: qt5
-        after: [qt, fluid]
     # Fluid (http://github.com/lirios/fluid)
     fluid:
         source: https://github.com/lirios/fluid.git
