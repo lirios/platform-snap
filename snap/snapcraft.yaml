@@ -30,6 +30,8 @@ parts:
             liri-app-launch.sh: bin/liri-app-launch
         stage:
             - bin/liri-app-launch
+        after:
+            - desktop-glib-only
     # Fluid Dialog
     fluid-dialog:
         source: src/fluid-dialog

@@ -1,199 +1,15 @@
 #!/bin/bash
 
 # Launch script for Liri Apps using the Liri App Platform
-# Based on https://github.com/ubuntu/snapcraft-desktop-helpers
+# Sets up environment variables specific to the Liri platform snap
+# Originally based on the Qt desktop launcher from
+# https://github.com/ubuntu/snapcraft-desktop-helpers
 
-needs_update=true
-
-. $SNAP_USER_DATA/.last_revision 2>/dev/null || true
-if [ "$SNAP_DESKTOP_LAST_REVISION" = "$SNAP_REVISION" ]; then
-  needs_update=false
-fi
-[ $needs_update = true ] && echo "SNAP_DESKTOP_LAST_REVISION=$SNAP_REVISION" > $SNAP_USER_DATA/.last_revision
-
-if [ "$SNAP_ARCH" == "amd64" ]; then
-  ARCH="x86_64-linux-gnu"
-elif [ "$SNAP_ARCH" == "armhf" ]; then
-  ARCH="arm-linux-gnueabihf"
-elif [ "$SNAP_ARCH" == "arm64" ]; then
-  ARCH="aarch64-linux-gnu"
-else
-  ARCH="$SNAP_ARCH-linux-gnu"
-fi
-
-export SNAP_LAUNCHER_ARCH_TRIPLET=$ARCH
-
-#################
-# Launcher init #
-#################
-
-if [ "$SNAP_ARCH" == "amd64" ]; then
-  ARCH="x86_64-linux-gnu"
-elif [ "$SNAP_ARCH" == "armhf" ]; then
-  ARCH="arm-linux-gnueabihf"
-elif [ "$SNAP_ARCH" == "arm64" ]; then
-  ARCH="aarch64-linux-gnu"
-else
-  ARCH="$SNAP_ARCH-linux-gnu"
-fi
-
-export SNAP_LAUNCHER_ARCH_TRIPLET=$ARCH
-
-###############################################
-# Launcher common exports for any desktop app #
-###############################################
-
-WITH_RUNTIME=no
-if [ -z "$RUNTIME" ]; then
-  RUNTIME=$SNAP
-else
-  # add general paths not added by snapcraft due to runtime snap
-  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$RUNTIME/lib
-  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$RUNTIME/lib/$ARCH
-  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$RUNTIME/usr/local/lib
-  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$RUNTIME/usr/lib
-  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$RUNTIME/usr/lib/$ARCH
-  export PATH=$PATH:$RUNTIME/usr/bin
-  WITH_RUNTIME=yes
-fi
-
-# XKB config
-export XKB_CONFIG_ROOT=$RUNTIME/usr/share/X11/xkb
-
-# Give XOpenIM a chance to locate locale data.
-# This is required for text input to work in SDL2 games.
-export XLOCALEDIR=$RUNTIME/usr/share/X11/locale
-
-if [ -z "$SNAP_IS_CLASSIC" ] ; then
-    # Mesa Libs for OpenGL support
-    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$RUNTIME/usr/lib/$ARCH/mesa
-    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$RUNTIME/usr/lib/$ARCH/mesa-egl
-
-    # Tell libGL where to find the drivers
-    export LIBGL_DRIVERS_PATH=$RUNTIME/usr/lib/$ARCH/dri
-    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LIBGL_DRIVERS_PATH
-
-    # Workaround in snapd for proprietary nVidia drivers mounts the drivers in
-    # /var/lib/snapd/lib/gl that needs to be in LD_LIBRARY_PATH
-    # Without that OpenGL using apps do not work with the nVidia drivers.
-    # Ref.: https://bugs.launchpad.net/snappy/+bug/1588192
-    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/var/lib/snapd/lib/gl
-else
-    # Workaround for classic snap not finding NVidia drivers.
-    # FIXME: This workaround will not work on all distributions.
-    export LIBGL_DRIVERS_PATH=$RUNTIME/usr/lib/$ARCH/dri:/usr/lib/$ARCH/dri
-    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LIBGL_DRIVERS_PATH
-fi
-
-# Pulseaudio export
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$RUNTIME/usr/lib/$ARCH/pulseaudio
-
-# Tell GStreamer where to find its plugins
-export GST_PLUGIN_PATH=$SNAP/usr/lib/$ARCH/gstreamer-1.0
-export GST_PLUGIN_SYSTEM_PATH=$RUNTIME/usr/lib/$ARCH/gstreamer-1.0
-# gst plugin scanner doesn't install in the correct path: https://github.com/ubuntu/snapcraft-desktop-helpers/issues/43
-export GST_PLUGIN_SCANNER=$RUNTIME/usr/lib/$ARCH/gstreamer1.0/gstreamer-1.0/gst-plugin-scanner
-
-# XDG Config
-export XDG_CONFIG_DIRS=$RUNTIME/etc/xdg:$RUNTIME/usr/xdg:$XDG_CONFIG_DIRS
-[ "$WITH_RUNTIME" = yes ] && XDG_CONFIG_DIRS=$SNAP/etc/xdg:$SNAP/usr/xdg:$XDG_CONFIG_DIRS # add local SNAP assets if a runtime is used
-
-# Define snaps' own data dir
-export XDG_DATA_DIRS=$SNAP_USER_DATA:$RUNTIME/usr/share:$SNAP/share:$XDG_DATA_DIRS
-[ "$WITH_RUNTIME" = yes ] && XDG_DATA_DIRS=$SNAP_USER_DATA:$SNAP/usr/share:$XDG_DATA_DIRS # add local SNAP assets if a runtime is used
-
-# Set XDG_DATA_HOME to local path
-export XDG_DATA_HOME=$SNAP_USER_DATA/.local/share
-export XDG_DATA_DIRS=$XDG_DATA_HOME:$XDG_DATA_DIRS
-mkdir -p $XDG_DATA_HOME
-
-# Set cache folder to local path
-export XDG_CACHE_HOME=$SNAP_USER_DATA/.cache
-mkdir -p $XDG_CACHE_HOME
-
-# Create $XDG_RUNTIME_DIR if not exists (to be removed when LP: #1656340 is fixed)
-[ -n "$XDG_RUNTIME_DIR" ] && mkdir -p $XDG_RUNTIME_DIR -m 700
-
-# GI repository
-export GI_TYPELIB_PATH=$RUNTIME/usr/lib/girepository-1.0:$RUNTIME/usr/lib/$ARCH/girepository-1.0
-[ "$WITH_RUNTIME" = yes ] && GI_TYPELIB_PATH=$SNAP/usr/lib/girepository-1.0:$SNAP/usr/lib/$ARCH/girepository-1.0 # add local SNAP assets if a runtime is used
-
-# Font Config and themes
-export FONTCONFIG_PATH=$RUNTIME/etc/fonts/conf.d
-export FONTCONFIG_FILE=$RUNTIME/etc/fonts/fonts.conf
-if [ $needs_update = true ]; then
-  rm -rf $XDG_DATA_HOME/{fontconfig,fonts,fonts-*,themes,.themes}
-  ln -sf $RUNTIME/usr/share/{fontconfig,fonts,fonts-*,themes} $XDG_DATA_HOME
-  ln -sfn $RUNTIME/usr/share/themes $SNAP_USER_DATA/.themes
-fi
-
-# Build mime.cache
-# needed for gtk and qt icon
-if [ $needs_update = true ]; then
-  rm -rf $XDG_DATA_HOME/mime
-  if [ `which update-mime-database` ]; then
-    cp --preserve=timestamps -dR $RUNTIME/usr/share/mime $XDG_DATA_HOME
-    update-mime-database $XDG_DATA_HOME/mime
-  fi
-fi
-
-# Ensure the app finds locale definitions (requires locales-all to be installed)
-export LOCPATH=$LOCPATH:$SNAP/usr/lib/locale
-
-# Gio modules and cache (including gsettings module)
-export GIO_MODULE_DIR=$XDG_CACHE_HOME/gio-modules
-function compile_giomodules {
-  if [ -f $1/glib-2.0/gio-querymodules ]; then
-    rm -rf $GIO_MODULE_DIR
-    mkdir -p $GIO_MODULE_DIR
-    ln -s $1/gio/modules/*.so $GIO_MODULE_DIR
-    $1/glib-2.0/gio-querymodules $GIO_MODULE_DIR
-  fi
-}
-if [ $needs_update = true ]; then
-  compile_giomodules $RUNTIME/usr/lib/$ARCH
-fi
-
-# Keep an array of data dirs, for looping through them
-IFS=':' read -r -a data_dirs_array <<< "$XDG_DATA_DIRS"
-
-# Setup compiled gsettings schema
-GS_SCHEMA_DIR=$XDG_DATA_HOME/glib-2.0/schemas
-function compile_schemas {
-  if [ -f "$1" ]; then
-    rm -rf $GS_SCHEMA_DIR
-    mkdir -p $GS_SCHEMA_DIR
-    for d in "${data_dirs_array[@]}"; do
-      schema_dir=$d/glib-2.0/schemas
-      if [ "$(ls -A $schema_dir/*.xml 2>/dev/null)" ]; then
-        ln -s $schema_dir/*.xml $GS_SCHEMA_DIR
-      fi
-    done
-    "$1" $GS_SCHEMA_DIR
-  fi
-}
-if [ $needs_update = true ]; then
-  compile_schemas $RUNTIME/usr/lib/$ARCH/glib-2.0/glib-compile-schemas
-fi
-
-# Enable gsettings user changes
-# symlink the dconf file if home plug is connected for read
-DCONF_DEST_USER_DIR=$SNAP_USER_DATA/.config/dconf
-if [ ! -f $DCONF_DEST_USER_DIR/user ]; then
-  if [ -f /home/$USER/.config/dconf/user ]; then
-    mkdir -p $DCONF_DEST_USER_DIR
-    ln -s /home/$USER/.config/dconf/user $DCONF_DEST_USER_DIR
-  fi
-fi
-
-# Testability support
-if [ -d "$SNAP/testability/$ARCH" ]; then
-  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$SNAP/testability:$SNAP/testability/$ARCH:$SNAP/testability/$ARCH/mesa
-fi
-
-#############################
-# Qt launcher specific part #
-#############################
+# Additional library paths
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$RUNTIME/usr/local/lib
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$RUNTIME/usr/lib
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$RUNTIME/usr/lib/$ARCH
+export PATH=$PATH:$RUNTIME/usr/bin
 
 # Removes Qt warning: Could not find a location
 # of the system Compose files
@@ -210,39 +26,9 @@ export QT_QPA_PLATFORM_PLUGIN_PATH=$RUNTIME/lib/qt5/plugins/platforms
 export QT_QPA_PLATFORM_PLUGIN_PATH=$RUNTIME/lib/plugins/platforms:$QT_QPA_PLATFORM_PLUGIN_PATH
 [ "$WITH_RUNTIME" = yes ] && QML2_IMPORT_PATH=$SNAP/lib/$ARCH:$SNAP/usr/lib/$ARCH/qt5/qml:$QML2_IMPORT_PATH
 
-# Use GTK styling for running under Unity 7
+# Use GTK styling for running under Gtk based desktop environments
 export GTK_PATH=$RUNTIME/usr/lib/$ARCH/gtk-2.0
 
-# Gdk-pixbuf loaders
-export GDK_PIXBUF_MODULE_FILE=$XDG_CACHE_HOME/gdk-pixbuf-loaders.cache
-export GDK_PIXBUF_MODULEDIR=$RUNTIME/usr/lib/$ARCH/gdk-pixbuf-2.0/2.10.0/loaders
-if [ $needs_update = true ]; then
-  rm -f $GDK_PIXBUF_MODULE_FILE
-  if [ -f $RUNTIME/usr/lib/$ARCH/gdk-pixbuf-2.0/gdk-pixbuf-query-loaders ]; then
-    $RUNTIME/usr/lib/$ARCH/gdk-pixbuf-2.0/gdk-pixbuf-query-loaders > $GDK_PIXBUF_MODULE_FILE
-  fi
-fi
-
-# Icon themes cache
-if [ $needs_update = true ]; then
-  rm -rf $XDG_DATA_HOME/icons
-  mkdir -p $XDG_DATA_HOME/icons
-  for d in "${data_dirs_array[@]}"; do
-    for i in $d/icons/*; do
-      if [ -d "$i" ]; then
-        theme_dir=$XDG_DATA_HOME/icons/$(basename "$i")
-        if [ ! -d "$theme_dir" ]; then
-          mkdir -p "$theme_dir"
-          ln -s $i/* "$theme_dir"
-          if [ -f $RUNTIME/usr/sbin/update-icon-caches ]; then
-            $RUNTIME/usr/sbin/update-icon-caches "$theme_dir"
-          elif [ -f $RUNTIME/usr/sbin/update-icon-cache.gtk2 ]; then
-            $RUNTIME/usr/sbin/update-icon-cache.gtk2 "$theme_dir"
-          fi
-        fi
-      fi
-    done
-  done
-fi
-
-exec "$@"
+# Start the generic glib desktop launcher
+# from the Ubuntu snapcraft desktop helpers
+source $RUNTIME/bin/desktop-launch "$@"
