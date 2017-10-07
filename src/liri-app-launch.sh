@@ -31,4 +31,4 @@ export GTK_PATH=$RUNTIME/usr/lib/$ARCH/gtk-2.0
 
 # Start the generic glib desktop launcher
 # from the Ubuntu snapcraft desktop helpers
-source $RUNTIME/bin/desktop-launch "$@"
+exec $RUNTIME/bin/desktop-launch "$@"
