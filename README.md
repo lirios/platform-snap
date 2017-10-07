@@ -26,7 +26,7 @@ sudo snap install --dangerous liri-platform*.snap
 ### Usage
 To run the included [Fluid][fluid-gh] demo:
 ```sh
-snap run liri-platform0.fluid-demo
+snap run liri-platform-<version>.fluid-demo
 ```
 
 [ubuntu-com]: https://www.ubuntu.com/
