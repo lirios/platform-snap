@@ -8,6 +8,7 @@ description: |
     Liri's cross-platform apps in order to minimize the disk space usage.
 grade: devel
 confinement: strict
+architectures: [amd64]
 
 slots:
     platform:
