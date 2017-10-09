@@ -5,6 +5,12 @@
 # Originally based on the Qt desktop launcher from
 # https://github.com/ubuntu/snapcraft-desktop-helpers
 
+# If the launcher is called from within the platform snap itself
+# (e.g. fluid demo):
+if [ -z "$RUNTIME" ]; then
+    RUNTIME=$SNAP
+fi
+
 # Additional library paths
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$RUNTIME/usr/local/lib
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$RUNTIME/usr/lib
