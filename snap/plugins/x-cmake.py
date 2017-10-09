@@ -95,12 +95,12 @@ class CMakePlugin(snapcraft.plugins.make.MakePlugin):
         env['PKG_CONFIG_PATH'] = '{0}/usr/lib/pkgconfig:{0}/usr/lib/x86_64-linux-gnu/pkgconfig'.format(
             self.project.stage_dir
         )
-        env['LD_LIBRARY_PATH'] = '{}/lib/qt5/lib:$LD_LIBRARY_PATH'.format(
+        env['LD_LIBRARY_PATH'] = '{}/usr/lib/qt5/lib:$LD_LIBRARY_PATH'.format(
             self.project.stage_dir
         )
         env['CMAKE_PREFIX_PATH'] = '$CMAKE_PREFIX_PATH:{0}/lib/cmake:{0}/lib/x86_64-linux-gnu/cmake'.format(
             self.project.stage_dir
-        ) + ':{0}/lib/qt5/lib/cmake/'.format(
+        ) + ':{0}/usr/lib/qt5/lib/cmake/'.format(
             self.project.stage_dir
         )
         env['CMAKE_INCLUDE_PATH'] = '$CMAKE_INCLUDE_PATH:' + ':'.join(

@@ -41,8 +41,8 @@ parts:
         plugin: qbs
         build-attributes: ["no-system-libraries"]
         qbs-options:
-            - projects.lirideployment.qmlDir:lib/qt5/qml
-            - projects.lirideployment.pluginsDir:lib/qt5/plugins
+            - projects.lirideployment.qmlDir:usr/lib/qt5/qml
+            - projects.lirideployment.pluginsDir:usr/lib/qt5/plugins
         after:
             - qt
             - qbs
@@ -53,8 +53,8 @@ parts:
         source: https://github.com/lirios/qtaccountsservice.git
         build-attributes: ["no-system-libraries"]
         qbs-options:
-            - projects.lirideployment.qmlDir:lib/qt5/qml
-            - projects.lirideployment.pluginsDir:lib/qt5/plugins
+            - projects.lirideployment.qmlDir:usr/lib/qt5/qml
+            - projects.lirideployment.pluginsDir:usr/lib/qt5/plugins
         after:
             - qt
             - qbs
@@ -66,8 +66,8 @@ parts:
         source: https://github.com/lirios/qtgsettings.git
         build-attributes: ["no-system-libraries"]
         qbs-options:
-            - projects.lirideployment.qmlDir:lib/qt5/qml
-            - projects.lirideployment.pluginsDir:lib/qt5/plugins
+            - projects.lirideployment.qmlDir:usr/lib/qt5/qml
+            - projects.lirideployment.pluginsDir:usr/lib/qt5/plugins
         after:
             - qt
             - qbs
@@ -82,8 +82,8 @@ parts:
         # in LXC containers
         qbs-jobs: 1
         qbs-options:
-            - projects.lirideployment.qmlDir:lib/qt5/qml
-            - projects.lirideployment.pluginsDir:lib/qt5/plugins
+            - projects.lirideployment.qmlDir:usr/lib/qt5/qml
+            - projects.lirideployment.pluginsDir:usr/lib/qt5/plugins
         after:
             - libqtxdg
             - kde-dependencies
@@ -96,8 +96,8 @@ parts:
         source: https://github.com/lirios/wayland.git
         build-attributes: ["no-system-libraries"]
         qbs-options:
-            - projects.lirideployment.qmlDir:lib/qt5/qml
-            - projects.lirideployment.pluginsDir:lib/qt5/plugins
+            - projects.lirideployment.qmlDir:usr/lib/qt5/qml
+            - projects.lirideployment.pluginsDir:usr/lib/qt5/plugins
         after:
             - qt
             - qbs
@@ -109,8 +109,8 @@ parts:
         source: https://github.com/lirios/vibe.git
         build-attributes: ["no-system-libraries"]
         qbs-options:
-            - projects.lirideployment.qmlDir:lib/qt5/qml
-            - projects.lirideployment.pluginsDir:lib/qt5/plugins
+            - projects.lirideployment.qmlDir:usr/lib/qt5/qml
+            - projects.lirideployment.pluginsDir:usr/lib/qt5/plugins
         after:
             - qt
             - qbs
@@ -166,9 +166,9 @@ parts:
             # This is not required in later Ubuntu versions (e.g. Ubuntu 17.04).
             sed -i '143i/usr/lib/x86_64-linux-gnu/gstreamer-1.0/include' src/QGst/CMakeLists.txt
             sed -i '12iinclude_directories(/usr/lib/x86_64-linux-gnu/gstreamer-1.0/include)' elements/CMakeLists.txt
-            export LD_LIBRARY_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib:$LD_LIBRARY_PATH
+            export LD_LIBRARY_PATH=$SNAPCRAFT_STAGE/usr/lib/qt5/lib:$LD_LIBRARY_PATH
             mkdir build && cd build
-            cmake -DCMAKE_PREFIX_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib/cmake/ \
+            cmake -DCMAKE_PREFIX_PATH=$SNAPCRAFT_STAGE/usr/lib/qt5/lib/cmake/ \
                   -DCMAKE_BUILD_TYPE=Release \
                   -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr \
                   -DCMAKE_INSTALL_LIBDIR=lib \
@@ -404,9 +404,9 @@ parts:
             # Ugly hack to set correct install directory
             # in order to make kconfigwidgets build
             echo "#define KDOCTOOLS_INSTALL_DATADIR_KF5 \"$SNAPCRAFT_STAGE/share/kf5\"" >> config-kdoctools.h.cmake
-            export LD_LIBRARY_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib:$LD_LIBRARY_PATH
+            export LD_LIBRARY_PATH=$SNAPCRAFT_STAGE/usr/lib/qt5/lib:$LD_LIBRARY_PATH
             mkdir build && cd build
-            cmake -DCMAKE_PREFIX_PATH=$SNAPCRAFT_STAGE/lib/qt5/lib/cmake/ \
+            cmake -DCMAKE_PREFIX_PATH=$SNAPCRAFT_STAGE/usr/lib/qt5/lib/cmake/ \
                   -DCMAKE_BUILD_TYPE=Release \
                   -DCMAKE_INSTALL_LIBDIR=lib \
                   -DECM_DIR=$SNAPCRAFT_STAGE/share/ECM/cmake \
@@ -517,9 +517,9 @@ parts:
         plugin: dump
         source: src
         organize:
-            qt.conf: lib/qt5/bin/qt.conf
+            qt.conf: usr/lib/qt5/bin/qt.conf
         stage:
-            - lib/qt5/bin/qt.conf
+            - usr/lib/qt5/bin/qt.conf
         after: [qt]
     # Qt Conf (libexec)
     # Override hard-coded Qt paths
@@ -527,16 +527,16 @@ parts:
         plugin: dump
         source: src
         organize:
-            qt.conf: lib/qt5/libexec/qt.conf
+            qt.conf: usr/lib/qt5/libexec/qt.conf
         stage:
-            - lib/qt5/libexec/qt.conf
+            - usr/lib/qt5/libexec/qt.conf
         after: [qt]
     # Qt
     # based on https://github.com/tjyrinki/qt58
     # Thanks to Timo Jyrinki (@tjyrinki)
     qt:
         plugin: autotools
-        source: https://download.qt.io/archive/qt/5.9/5.9.0/single/qt-everywhere-opensource-src-5.9.0.tar.xz
+        source: https://download.qt.io/archive/qt/5.9/5.9.2/single/qt-everywhere-opensource-src-5.9.2.tar.xz
         source-type: tar
         build-attributes: ["no-system-libraries"]
         after: [qt-dependencies]
@@ -545,7 +545,7 @@ parts:
         # properly if an in-source build is performed
         build: |
             ./configure \
-                -prefix $SNAPCRAFT_PART_INSTALL/lib/qt5 \
+                -prefix $SNAPCRAFT_PART_INSTALL/usr/lib/qt5 \
                 -release \
                 -confirm-license \
                 -opensource \
@@ -578,9 +578,7 @@ parts:
                 -opengl desktop \
                 -nomake examples \
                 -nomake tests \
-                -skip qtquick1 \
-                -skip qtwebkit \
-                -skip qtwebkit-examples
+                -skip qtquick1
             make -j$(nproc)
             make install
     # Qt dependencies
