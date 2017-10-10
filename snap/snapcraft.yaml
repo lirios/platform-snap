@@ -217,7 +217,7 @@ parts:
     # KDE Frameworks 5 meta
     kf5-meta: &kf5-meta
         plugin: nil
-        source-tag: v5.34.0
+        source-tag: v5.38.0
     # NetworkManagerQt
     # Qt wrapper for NetworkManager API
     networkmanager-qt:
