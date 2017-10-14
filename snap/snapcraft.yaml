@@ -137,14 +137,6 @@ parts:
         stage-packages:
             - fonts-roboto
             - fonts-noto
-    # CLI YAML parser written in go
-    # https://github.com/mikefarah/yaml
-    # Made by Mike Farah (@mikefarah)
-    # MIT licensed
-    yaml-cli:
-        source: https://github.com/mikefarah/yaml/archive/1.10.tar.gz
-        plugin: go
-        go-importpath: github.com/mikefarah/yaml
     # libqtxdg
     # Qt implementation of freedesktop.org xdg specs
     libqtxdg:
