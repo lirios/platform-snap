@@ -5,6 +5,16 @@
 # Originally based on the Qt desktop launcher from
 # https://github.com/ubuntu/snapcraft-desktop-helpers
 
+if [ "$SNAP_ARCH" == "amd64" ]; then
+  ARCH="x86_64-linux-gnu"
+elif [ "$SNAP_ARCH" == "armhf" ]; then
+  ARCH="arm-linux-gnueabihf"
+elif [ "$SNAP_ARCH" == "arm64" ]; then
+  ARCH="aarch64-linux-gnu"
+else
+  ARCH="$SNAP_ARCH-linux-gnu"
+fi
+
 # If the launcher is called from within the platform snap itself
 # (e.g. fluid demo):
 if [ -z "$RUNTIME" ]; then
