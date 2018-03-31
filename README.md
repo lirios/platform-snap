@@ -3,6 +3,7 @@ Liri App Platform for Snap
 
 [![License](https://img.shields.io/badge/license-GPLv3.0-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.html)
 [![GitHub release](https://img.shields.io/github/release/lirios/platform-snap.svg)](https://github.com/lirios/platform-snap)
+[![Build Status](https://travis-ci.org/lirios/platform-snap.svg?branch=develop)](https://travis-ci.org/lirios/platform-snap)
 [![GitHub issues](https://img.shields.io/github/issues/lirios/platform-snap.svg)](https://github.com/lirios/platform-snap/issues)
 [![Maintained](https://img.shields.io/maintenance/yes/2017.svg)](https://github.com/lirios/platform-snap/commits/develop)
 
