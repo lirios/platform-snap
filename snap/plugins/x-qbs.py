@@ -137,7 +137,7 @@ class QbsPlugin(snapcraft.BasePlugin):
                      env=env)
 
         # Run the build.
-        self.run([qbs, '-v',
+        self.run([qbs,
                   '-d', self.builddir,
                   '-f', self.sourcedir,
                   '-j', str(self.project.parallel_build_count),
