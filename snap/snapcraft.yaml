@@ -215,6 +215,15 @@ parts:
     stage:
       - usr/lib/x86_64-linux-gnu/qt5/libexec/qt.conf
     after: [qt]
+  qt-symlinks:
+    plugin: nil
+    install: |
+      mkdir -p $SNAPCRAFT_PART_INSTALL/usr/lib/x86_64-linux-gnu/qt5
+      ln -s ../../../share/qt5/translations \
+        $SNAPCRAFT_PART_INSTALL/usr/lib/x86_64-linux-gnu/qt5/translations
+      ln -s ../../../share/qt5/resources \
+        $SNAPCRAFT_PART_INSTALL/usr/lib/x86_64-linux-gnu/qt5/resources
+    after: [qt]
   qt:
     plugin: nil
     stage-packages:
