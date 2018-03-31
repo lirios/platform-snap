@@ -7,7 +7,7 @@ prime/
 stage/
 *.snap
 *source.tar.bz2
-.snapcraft/
+snap/.snapcraft/
 
 # ------ #
 # Python #
