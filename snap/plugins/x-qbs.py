@@ -1,6 +1,6 @@
 # -*- Mode:Python; indent-tabs-mode:nil; tab-width:4 -*-
 #
-# Copyright (C) 2017 Tim Süberkrüb <dev@timsueberkrueb.io>
+# Copyright (C) 2018 Tim Süberkrüb <dev@timsueberkrueb.io>
 # Copyright (C) 2017 Dan Chapman <dpniel@ubuntu.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -75,11 +75,6 @@ class QbsPlugin(snapcraft.BasePlugin):
             'default': 'qt5'
         }
 
-        schema['properties']['qbs-jobs'] = {
-            'type': 'number',
-            'default': None
-        }
-
         return schema
 
     @classmethod
@@ -107,8 +102,10 @@ class QbsPlugin(snapcraft.BasePlugin):
 
         env = self._build_environment()
 
+        qbs = 'qbs'
+
         # Setup the toolchains, there will only be gcc or clang by default
-        self.run(['qbs', 'setup-toolchains', '--detect'], env=env)
+        self.run([qbs, 'setup-toolchains', '--detect'], env=env)
 
         # a unique'ish name for snap builds. Hopefully this shouldn't clash
         # with any other local profiles. Each profile should look something
@@ -117,55 +114,46 @@ class QbsPlugin(snapcraft.BasePlugin):
             self.options.qt_version,
             self.options.qbs_profile)
 
-        qmake = self.project.stage_dir + '/usr/lib/qt5/bin/qmake'
+        qt_dir = "{}/usr/lib/x86_64-linux-gnu/qt5".format(self.project.stage_dir)
+        qmake = '{}/bin/qmake'.format(qt_dir)
 
         # Setup the Qt profile.
-        self.run(['qbs', 'setup-qt', qmake, build_profile], env=env)
+        self.run([qbs, 'setup-qt', qmake, build_profile], env=env)
+
+        self.run(['qbs', 'config', 'profiles.{}.qbs.architecture'.format(build_profile), 'x86_64'])
 
         # Add custom search paths
         self.run([
-            'qbs', 'config', 'preferences.qbsSearchPaths',
-            '{}/usr/share/qbs'.format(self.project.stage_dir)
+            qbs, 'config', 'preferences.qbsSearchPaths',
+            '{}/usr/local/share/qbs'.format(self.project.stage_dir)
         ], env=env)
 
         # Switch buildprofile to clang if required
         # we don't need to set gcc as that is the default baseProfile
         if self.options.qbs_profile == 'clang':
-            self.run(['qbs', 'config',
+            self.run([qbs, 'config',
                       'profiles.{}.baseProfile'.format(build_profile),
                       self.options.qbs_profile],
                      env=env)
 
         # Run the build.
-        self.run(['qbs', '-v',
+        self.run([qbs,
                   '-d', self.builddir,
                   '-f', self.sourcedir,
-                  '-j', str(self.options.qbs_jobs or multiprocessing.cpu_count()),
+                  '-j', str(self.project.parallel_build_count),
                   self.options.qbs_build_variant,
                   'qbs.installRoot:' + self.installdir,
-                  'qbs.installPrefix:usr',
                   'profile:' + build_profile] + self.options.qbs_options,
                   env=env)
 
     def _build_environment(self):
         env = os.environ.copy()
-        if self.options.qt_version is not None:
-            env['QT_SELECT'] = self.options.qt_version
         env['PKG_CONFIG_PATH'] = '{0}/usr/lib/pkgconfig:{0}/usr/lib/x86_64-linux-gnu/pkgconfig:'.format(
             self.project.stage_dir
-        ) + '{0}/usr/lib/qt5/lib/pkgconfig:{0}/lib/pkgconfig:'.format(
-            self.project.stage_dir
-        ) + '/usr/lib/x86_64-linux-gnu/pkgconfig'
-        env['QTDIR'] = self.project.stage_dir + '/usr/lib/qt5/'
-        env['QML_IMPORT_PATH'] = self.project.stage_dir + '/usr/lib/qt5/qml'
-        env['QML2_IMPORT_PATH'] = self.project.stage_dir + '/usr/lib/qt5/qml'
-        env['LD_LIBRARY_PATH'] = self.project.stage_dir + '/usr/lib/qt5/lib:' + \
-                                 self.project.stage_dir + '/usr/local/lib:' + \
-                                 self.project.stage_dir + '/usr/lib:' + \
-                                 self.project.stage_dir + '/lib'
+        )
+        env['LD_LIBRARY_PATH'] = '{}/usr/lib/x86_64-linux-gnu:'.format(self.project.stage_dir) + \
+                                 '{}/usr/lib:'.format(self.project.stage_dir)
         env['LIBRARY_PATH'] = env['LD_LIBRARY_PATH']
-        env['PATH'] = self.project.stage_dir + '/usr/lib/qt5/bin/:' \
-                      + self.project.stage_dir + '/usr/local/bin:' + \
-                      os.environ["PATH"]
         env['LIRI_INCLUDE_PREFIX'] = self.project.stage_dir + '/usr'
+        env['LIRI_LIBRARY_PREFIX'] = self.project.stage_dir + '/usr'
         return env

@@ -1,4 +1,4 @@
 [Desktop Entry]
 Name=Fluid Demo
-Exec=liri-platform0.fluid-demo %U
+Exec=liri-platform-0-9.fluid-demo %U
 Type=Application

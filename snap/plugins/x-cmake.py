@@ -1,6 +1,6 @@
 # -*- Mode:Python; indent-tabs-mode:nil; tab-width:4 -*-
 #
-# Copyright (C) 2017 Tim Süberkrüb
+# Copyright (C) 2018 Tim Süberkrüb <dev@timsueberkrueb.io>
 # Copyright (C) 2015-2016 Canonical Ltd
 #
 # This program is free software: you can redistribute it and/or modify
@@ -75,7 +75,7 @@ class CMakePlugin(snapcraft.plugins.make.MakePlugin):
         else:
             sourcedir = self.sourcedir
 
-        env = self._build_environment()
+        env = os.environ.copy()
 
         cmake_default_configflags = [
             '-DCMAKE_BUILD_TYPE=Release',
@@ -89,27 +89,3 @@ class CMakePlugin(snapcraft.plugins.make.MakePlugin):
         )
 
         self.make(env=env)
-
-    def _build_environment(self):
-        env = os.environ.copy()
-        env['PKG_CONFIG_PATH'] = '{0}/usr/lib/pkgconfig:{0}/usr/lib/x86_64-linux-gnu/pkgconfig'.format(
-            self.project.stage_dir
-        )
-        env['LD_LIBRARY_PATH'] = '{}/usr/lib/qt5/lib:$LD_LIBRARY_PATH'.format(
-            self.project.stage_dir
-        )
-        env['CMAKE_PREFIX_PATH'] = '$CMAKE_PREFIX_PATH:{0}/lib/cmake:{0}/lib/x86_64-linux-gnu/cmake'.format(
-            self.project.stage_dir
-        ) + ':{0}/usr/lib/qt5/lib/cmake/'.format(
-            self.project.stage_dir
-        )
-        env['CMAKE_INCLUDE_PATH'] = '$CMAKE_INCLUDE_PATH:' + ':'.join(
-            ['{0}/include', '{0}/usr/include', '{0}/include/{1}',
-             '{0}/usr/include/{1}']).format(
-                 self.project.stage_dir, self.project.arch_triplet)
-        env['CMAKE_LIBRARY_PATH'] = '$CMAKE_LIBRARY_PATH:' + ':'.join(
-            ['{0}/lib', '{0}/usr/lib', '{0}/lib/{1}',
-             '{0}/usr/lib/{1}']).format(
-                 self.project.stage_dir, self.project.arch_triplet)
-
-        return env

@@ -1,0 +1,26 @@
+language: bash
+services: [docker]
+sudo: required
+dist: trusty
+cache:
+  directories:
+    - /var/cache/apt/archives/*.deb
+
+script:
+  - ./.travis/build.sh
+
+after_success:
+  - openssl aes-256-cbc -K $encrypted_3f174d7a4335_key -iv $encrypted_3f174d7a4335_iv
+    -in .snapcraft/travis_snapcraft.cfg -out .snapcraft/snapcraft.cfg -d
+
+deploy:
+  on:
+    branch: develop
+  provider: script
+  script: docker run -v $(pwd):$(pwd) -t snapcore/snapcraft sh -c "apt update -qq
+    && cd $(pwd) && snapcraft && snapcraft push *.snap --release edge"
+  skip_cleanup: true
+
+notifications:
+  email: false
+  slack: lirios:fdUqVmPzqPskEL1UBhqapZ0w

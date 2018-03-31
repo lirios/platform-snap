@@ -1,748 +1,257 @@
 name: liri-platform-0-9
 version: script
 version-script: |
-    echo $(date '+%Y%m%d')-$(git rev-parse --short HEAD)
+  echo $(date '+%Y%m%d')-$(git rev-parse --short HEAD)
 summary: Liri Platform for sharing common libraries used by Liri products
 description: |
-    The Liri Platform provides a set of libraries that can be used by
-    Liri's cross-platform apps in order to minimize the disk space usage.
+  The Liri Platform provides a set of libraries that can be used by
+  Liri's cross-platform apps in order to minimize the disk space usage.
 grade: devel
 confinement: strict
 architectures: [amd64]
 
 slots:
-    platform:
-        content: liri-platform
-        interface: content
-        read: [.]
+  platform:
+    content: liri-platform
+    interface: content
+    read: [.]
 
 apps:
-    fluid-demo:
-        command: liri-app-launch "fluid-demo"
-        plugs:
-            - x11
-            - opengl
-            - unity7
+  fluid-demo:
+    command: liri-app-launch "fluid-demo"
+    plugs:
+      - x11
+      - opengl
+      - unity7
 
 parts:
-    # Liri App Launcher
-    liri-app-launch:
-        source: src
-        plugin: dump
-        organize:
-            liri-app-launch.sh: bin/liri-app-launch
-        stage:
-            - bin/liri-app-launch
-        after:
-            - desktop-glib-only
-    # Fluid (http://github.com/lirios/fluid)
-    fluid:
-        source: https://github.com/lirios/fluid.git
-        plugin: qbs
-        build-attributes: ["no-system-libraries"]
-        qbs-options:
-            - projects.lirideployment.qmlDir:usr/lib/qt5/qml
-            - projects.lirideployment.pluginsDir:usr/lib/qt5/plugins
-        after:
-            - qt
-            - qbs
-    # Qt Accounts Service
-    # Qt-style freedesktop.org AccountsService DBus api
-    qtaccountsservice:
-        plugin: qbs
-        source: https://github.com/lirios/qtaccountsservice.git
-        build-attributes: ["no-system-libraries"]
-        qbs-options:
-            - projects.lirideployment.qmlDir:usr/lib/qt5/qml
-            - projects.lirideployment.pluginsDir:usr/lib/qt5/plugins
-        after:
-            - qt
-            - qbs
-            - qbs-shared
-    # Qt GSettings
-    # Qt wrapper for GSettings
-    qtgsettings:
-        plugin: qbs
-        source: https://github.com/lirios/qtgsettings.git
-        build-attributes: ["no-system-libraries"]
-        qbs-options:
-            - projects.lirideployment.qmlDir:usr/lib/qt5/qml
-            - projects.lirideployment.pluginsDir:usr/lib/qt5/plugins
-        after:
-            - qt
-            - qbs
-    # libliri
-    # Library for Liri apps
-    libliri:
-        plugin: qbs
-        source: https://github.com/lirios/libliri.git
-        build-attributes: ["no-system-libraries"]
-        # Workaround for odd qbs bug
-        # leading to failures
-        # in LXC containers
-        qbs-jobs: 1
-        qbs-options:
-            - projects.lirideployment.qmlDir:usr/lib/qt5/qml
-            - projects.lirideployment.pluginsDir:usr/lib/qt5/plugins
-        after:
-            - libqtxdg
-            - kde-dependencies
-            - qbs
-            - qbs-shared
-    # Liri Wayland
-    # Wayland client and server libraries for Liri OS
-    liri-wayland:
-        plugin: qbs
-        source: https://github.com/lirios/wayland.git
-        build-attributes: ["no-system-libraries"]
-        qbs-options:
-            - projects.lirideployment.qmlDir:usr/lib/qt5/qml
-            - projects.lirideployment.pluginsDir:usr/lib/qt5/plugins
-        after:
-            - qt
-            - qbs
-            - qbs-shared
-            - libliri
-    # Vibe
-    # A collection of core classes used throughout Liri
-    vibe:
-        plugin: qbs
-        source: https://github.com/lirios/vibe.git
-        build-attributes: ["no-system-libraries"]
-        qbs-options:
-            - projects.lirideployment.qmlDir:usr/lib/qt5/qml
-            - projects.lirideployment.pluginsDir:usr/lib/qt5/plugins
-        after:
-            - qt
-            - qbs
-            - qbs-shared
-            - libliri
-            - fluid
-            - kwallet
-            - solid
-            - networkmanager-qt
-            - modemmanager-qt
-            - polkit-qt-1
-    # Qbs Shared
-    # Shared imports and modules for Liri Qbs projects
-    qbs-shared:
-        plugin: qbs
-        source: https://github.com/lirios/qbs-shared.git
-        build-attributes: ["no-system-libraries"]
-        after:
-            - qt
-            - qbs
-    # Material Design fonts
-    fonts:
-        plugin: nil
-        stage-packages:
-            - fonts-roboto
-            - fonts-noto
-    # libqtxdg
-    # Qt implementation of freedesktop.org xdg specs
-    libqtxdg:
-        plugin: cmake
-        source: https://github.com/lxde/libqtxdg/archive/2.0.0.tar.gz
-        build-attributes: ["no-system-libraries"]
-        after: [qt]
-    # Qt GStreamer
-    qt-gstreamer:
-        plugin: cmake
-        source: https://anongit.freedesktop.org/git/gstreamer/qt-gstreamer.git
-        source-type: git
-        source-tag: "1.2.0"
-        build-attributes: ["no-system-libraries"]
-        after: [kde-dependencies]
-        build: |
-            # Dirty hack to make qt-gstreamer find <gst/gstconfig.h> located in
-            # /usr/lib/x86_64-linux-gnu/gstreamer-1.0/include on Ubuntu 16.04
-            # This is not required in later Ubuntu versions (e.g. Ubuntu 17.04).
-            sed -i '143i/usr/lib/x86_64-linux-gnu/gstreamer-1.0/include' src/QGst/CMakeLists.txt
-            sed -i '12iinclude_directories(/usr/lib/x86_64-linux-gnu/gstreamer-1.0/include)' elements/CMakeLists.txt
-            export LD_LIBRARY_PATH=$SNAPCRAFT_STAGE/usr/lib/qt5/lib:$LD_LIBRARY_PATH
-            mkdir build && cd build
-            cmake -DCMAKE_PREFIX_PATH=$SNAPCRAFT_STAGE/usr/lib/qt5/lib/cmake/ \
-                  -DCMAKE_BUILD_TYPE=Release \
-                  -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr \
-                  -DCMAKE_INSTALL_LIBDIR=lib \
-                  -DECM_DIR=$SNAPCRAFT_STAGE/share/ECM/cmake \
-                  -DUSE_QT_PLUGIN_DIR=OFF \
-                  -DQT_VERSION=5 \
-                  ..
-            make -j$(nproc)
-            make install
-            cd ..
-    # polkit-qt-1
-    # Qt wrapper around polkit-1 client libraries
-    polkit-qt-1:
-        plugin: cmake
-        source: https://github.com/KDE/polkit-qt-1/archive/v0.112.0.tar.gz
-        build-attributes: ["no-system-libraries"]
-        # polkit-qt-1's CMake doesn't get the paths right when it's
-        # installed with DESTDIR set.
-        # As a workaround, don't use DESTDIR (default make-install-var)
-        # And use CMAKE_INSTALL_PREFIX to set the the whole path
-        make-install-var: IGNORE
-        configflags:
-            - -DCMAKE_INSTALL_PREFIX=$SNAPCRAFT_PART_INSTALL/usr
-        after: [kde-dependencies]
-        install: |
-            # Fix polkit-qt's broken pkgconfig path handling.
-            # Note that snapcraft changes the "prefix" to the stage
-            # dir automatically.
-            sed -i -e 's|exec_prefix=/.*|exec_prefix=${prefix}|g' \
-                $SNAPCRAFT_PART_INSTALL/usr/lib/pkgconfig/polkit-qt5-1.pc
-            sed -i -e 's|libdir=/.*|libdir=${prefix}/lib|g' \
-                $SNAPCRAFT_PART_INSTALL/usr/lib/pkgconfig/polkit-qt5-1.pc
-            sed -i -e 's|includedir=/.*|includedir=${prefix}/include/polkit-qt5-1|g' \
-                $SNAPCRAFT_PART_INSTALL/usr/lib/pkgconfig/polkit-qt5-1.pc
-    # Phonon
-    # Multimedia library
-    phonon:
-        plugin: cmake
-        source: https://github.com/KDE/phonon
-        source-type: git
-        source-commit: 06a795aa00fea1c0a0b75c9daf0cbdf2f4ca9984
-        build-attributes: ["no-system-libraries"]
-        after: [kde-dependencies]
-        configflags:
-            - -DPHONON_BUILD_PHONON4QT5=ON
-    # KDE Frameworks 5 meta
-    kf5-meta: &kf5-meta
-        plugin: nil
-        source-tag: v5.38.0
-    # NetworkManagerQt
-    # Qt wrapper for NetworkManager API
-    networkmanager-qt:
-        <<: *kf5-meta
-        plugin: cmake
-        source: https://github.com/KDE/networkmanager-qt.git
-        build-attributes: ["no-system-libraries"]
-        after: [kde-dependencies]
-    # ModemManagerQt
-    # Qt wrapper for ModemManager DBus API
-    modemmanager-qt:
-        <<: *kf5-meta
-        plugin: cmake
-        source: https://github.com/KDE/modemmanager-qt.git
-        build-attributes: ["no-system-libraries"]
-        after: [kde-dependencies]
-    # KDE Solid
-    # Desktop hardware abstraction framework
-    solid:
-        <<: *kf5-meta
-        plugin: cmake
-        source: https://github.com/KDE/solid.git
-        build-attributes: ["no-system-libraries"]
-        after: [kde-dependencies]
-    # KI18n
-    # KDE Gettext-based UI text internationalization
-    ki18n:
-        <<: *kf5-meta
-        plugin: cmake
-        source: https://github.com/KDE/ki18n.git
-        build-attributes: ["no-system-libraries"]
-        after: [kde-dependencies]
-    # KConfig
-    # KDE's platform-independent settings library
-    kconfig:
-        <<: *kf5-meta
-        plugin: cmake
-        source: https://github.com/KDE/kconfig.git
-        build-attributes: ["no-system-libraries"]
-        after:
-            - kde-dependencies
-            - kauth
-            - kcodecs
-    # KCoreAddons
-    # Collection of non-GUI utilities for Qt
-    kcoreaddons:
-        <<: *kf5-meta
-        plugin: cmake
-        source: https://github.com/KDE/kcoreaddons.git
-        build-attributes: ["no-system-libraries"]
-        after: [kde-dependencies]
-    # KWindowSystem
-    # KDE window system access
-    kwindowsystem:
-        <<: *kf5-meta
-        plugin: cmake
-        source: https://github.com/KDE/kwindowsystem.git
-        build-attributes: ["no-system-libraries"]
-        after: [kde-dependencies]
-    # KAuth
-    # KDE authentication library
-    kauth:
-        <<: *kf5-meta
-        plugin: cmake
-        source: https://github.com/KDE/kauth.git
-        build-attributes: ["no-system-libraries"]
-        after:
-            - kde-dependencies
-            - kcoreaddons
-            - polkit-qt-1
-    # KCodecs
-    # KDE string encoding library
-    kcodecs:
-        <<: *kf5-meta
-        plugin: cmake
-        source: https://github.com/KDE/kcodecs.git
-        build-attributes: ["no-system-libraries"]
-        after: [kde-dependencies]
-    # KDE GUI Addons
-    # KDE Utilities for graphical user interfaces
-    kguiaddons:
-        <<: *kf5-meta
-        plugin: cmake
-        source: https://github.com/KDE/kguiaddons.git
-        build-attributes: ["no-system-libraries"]
-        after: [kde-dependencies]
-    # KWidgetsAddons
-    # Large set of desktop widgets
-    kwidgetsaddons:
-        <<: *kf5-meta
-        plugin: cmake
-        source: https://github.com/KDE/kwidgetsaddons.git
-        build-attributes: ["no-system-libraries"]
-        after: [kde-dependencies]
-    # KConfigWidgets
-    # Widgets for configuration dialogs
-    kconfigwidgets:
-        <<: *kf5-meta
-        plugin: cmake
-        source: https://github.com/KDE/kconfigwidgets.git
-        build-attributes: ["no-system-libraries"]
-        after:
-            - kde-dependencies
-            - kauth
-            - kcoreaddons
-            - kcodecs
-            - kconfig
-            - kdoctools
-            - kguiaddons
-            - ki18n
-            - kwidgetsaddons
-    # KDBusAddons
-    # KDE convenience classes for DBus
-    kdbusaddons:
-        <<: *kf5-meta
-        plugin: cmake
-        source: https://github.com/KDE/kdbusaddons.git
-        build-attributes: ["no-system-libraries"]
-        after: [kde-dependencies]
-    # KArchive
-    # KDE archive access library
-    karchive:
-        <<: *kf5-meta
-        plugin: cmake
-        source: https://github.com/KDE/karchive.git
-        build-attributes: ["no-system-libraries"]
-        after: [kde-dependencies]
-    # KItemViews
-    # KDE model-view items framework
-    kitemviews:
-        <<: *kf5-meta
-        plugin: cmake
-        source: https://github.com/KDE/kitemviews.git
-        build-attributes: ["no-system-libraries"]
-        after: [kde-dependencies]
-    # KIconThemes
-    # KDE icon GUI utilities
-    kiconthemes:
-        <<: *kf5-meta
-        plugin: cmake
-        source: https://github.com/KDE/kiconthemes.git
-        build-attributes: ["no-system-libraries"]
-        after:
-            - kde-dependencies
-            - karchive
-            - ki18n
-            - kcoreaddons
-            - kconfigwidgets
-            - kwidgetsaddons
-            - kitemviews
-    # KNotifications
-    # KDE desktop notifications
-    knotifications:
-        <<: *kf5-meta
-        plugin: cmake
-        source: https://github.com/KDE/knotifications.git
-        build-attributes: ["no-system-libraries"]
-        after:
-            - kde-dependencies
-            - kwindowsystem
-            - kconfig
-            - kcodecs
-            - kcoreaddons
-            - phonon
-    # KCrash
-    # KDE application crash helpers
-    kcrash:
-        <<: *kf5-meta
-        plugin: cmake
-        source: https://github.com/KDE/kcrash.git
-        build-attributes: ["no-system-libraries"]
-        after:
-            - kde-dependencies
-            - kcoreaddons
-            - kwindowsystem
-    # KDocTools
-    # KDE documentation generation tools
-    kdoctools:
-        <<: *kf5-meta
-        plugin: cmake
-        source: https://github.com/KDE/kdoctools.git
-        build-attributes: ["no-system-libraries"]
-        build: |
-            # Ugly hack to set correct install directory
-            # in order to make kconfigwidgets build
-            echo "#define KDOCTOOLS_INSTALL_DATADIR_KF5 \"$SNAPCRAFT_STAGE/share/kf5\"" >> config-kdoctools.h.cmake
-            export LD_LIBRARY_PATH=$SNAPCRAFT_STAGE/usr/lib/qt5/lib:$LD_LIBRARY_PATH
-            mkdir build && cd build
-            cmake -DCMAKE_PREFIX_PATH=$SNAPCRAFT_STAGE/usr/lib/qt5/lib/cmake/ \
-                  -DCMAKE_BUILD_TYPE=Release \
-                  -DCMAKE_INSTALL_LIBDIR=lib \
-                  -DECM_DIR=$SNAPCRAFT_STAGE/share/ECM/cmake \
-                  ..
-            make -j$(nproc)
-            make install PREFIX=$SNAPCRAFT_PART_INSTALL
-            cd ..
-        after:
-            - kde-dependencies
-            - ki18n
-            - karchive
-    # KService
-    # KDE plugin framework for desktop services
-    kservice:
-        <<: *kf5-meta
-        plugin: cmake
-        source: https://github.com/KDE/kservice.git
-        build-attributes: ["no-system-libraries"]
-        configflags:
-            # Fix error: C++ style comments are not allowed in ISO C90
-            - -DCMAKE_C_COMPILER=clang
-        after:
-            - kde-dependencies
-            - kconfig
-            - kcoreaddons
-            - kcrash
-            - kdbusaddons
-            - ki18n
-            - kdoctools
-        build-packages:
-            - clang
-            - clang-3.8
-    # KWallet
-    # KDE's safe desktop storage framework
-    kwallet:
-        <<: *kf5-meta
-        plugin: cmake
-        source: https://github.com/KDE/kwallet.git
-        build-attributes: ["no-system-libraries"]
-        after:
-            - kde-dependencies
-            - knotifications
-            - kiconthemes
-            - kservice
-    # ECM (Extra CMake Modules)
-    # Newer version needed than currently
-    # available in Ubuntu archives
-    ecm:
-        <<: *kf5-meta
-        plugin: cmake
-        source: https://github.com/KDE/extra-cmake-modules.git
-        build-attributes: ["no-system-libraries"]
-    # KDE dependencies
-    # Dependencies for building KDE libraries
-    kde-dependencies:
-        plugin: nil
-        build-packages:
-            - mesa-common-dev
-            - libxfixes-dev
-            - libxcb-xfixes0-dev
-            - libxcb-keysyms1-dev
-            - libx11-xcb-dev
-            - libxrender-dev
-            - gperf
-            - zlib1g-dev
-            - libxml2-dev
-            - libxslt1-dev
-            - docbook-xml
-            - docbook-xsl
-            - flex
-            - bison
-            - libgcrypt20-dev
-            - network-manager-dev
-            - libnm-dev
-            - libpulse-dev
-            - libpolkit-agent-1-dev
-            - libpolkit-backend-1-dev
-            - libgbm-dev
-            - libinput-dev
-            - libxkbcommon-dev
-            - libboost-all-dev
-            - freeglut3-dev
-            - gstreamer1.0-nice
-            - libgstreamer1.0-dev
-            - libgstreamer-plugins-base1.0-dev
-            - libgles2-mesa-dev
-            - libxcb-cursor-dev
-            - libxcb-composite0-dev
-            - xorg-dev
-            - modemmanager-dev
-            # - libflatpak-dev (not available on Ubuntu 16.04)
-        stage-packages:
-            - libxcb-cursor0
-            - libxcb-composite0
-        after: [ecm, qt]
-    # Qbs
-    # Build tool
-    qbs:
-        plugin: qmake
-        source: https://github.com/qbs/qbs/archive/v1.9.0.tar.gz
-        build-attributes: ["no-system-libraries"]
-        qt-version: qt5
-        project-files: [qbs.pro]
-        after: [qt]
-    # Qt Conf (bin)
-    # Override hard-coded Qt paths
-    qt-conf-bin:
-        plugin: dump
-        source: src
-        organize:
-            qt.conf: usr/lib/qt5/bin/qt.conf
-        stage:
-            - usr/lib/qt5/bin/qt.conf
-        after: [qt]
-    # Qt Conf (libexec)
-    # Override hard-coded Qt paths
-    qt-conf-libexec:
-        plugin: dump
-        source: src
-        organize:
-            qt.conf: usr/lib/qt5/libexec/qt.conf
-        stage:
-            - usr/lib/qt5/libexec/qt.conf
-        after: [qt]
-    # Qt
-    # based on https://github.com/tjyrinki/qt58
-    # Thanks to Timo Jyrinki (@tjyrinki)
-    qt:
-        plugin: autotools
-        source: https://download.qt.io/archive/qt/5.9/5.9.2/single/qt-everywhere-opensource-src-5.9.2.tar.xz
-        source-type: tar
-        build-attributes: ["no-system-libraries"]
-        after: [qt-dependencies]
-        # https://bugreports.qt.io/browse/QTBUG-37417
-        # Qt private headers only get installed
-        # properly if an in-source build is performed
-        build: |
-            ./configure \
-                -prefix $SNAPCRAFT_PART_INSTALL/usr/lib/qt5 \
-                -release \
-                -confirm-license \
-                -opensource \
-                -plugin-sql-mysql \
-                -plugin-sql-odbc \
-                -plugin-sql-psql \
-                -plugin-sql-sqlite \
-                -no-sql-sqlite2 \
-                -plugin-sql-tds \
-                -system-sqlite \
-                -platform linux-g++-64 \
-                -system-harfbuzz \
-                -system-zlib \
-                -system-libpng \
-                -system-libjpeg \
-                -openssl \
-                -no-rpath \
-                -verbose \
-                -optimized-qmake \
-                -dbus-linked \
-                -strip \
-                -qpa xcb \
-                -xcb \
-                -glib \
-                -icu \
-                -accessibility \
-                -no-compile-examples \
-                -no-directfb \
-                -gstreamer "1.0" \
-                -opengl desktop \
-                -nomake examples \
-                -nomake tests \
-                -skip qtquick1
-            make -j$(nproc)
-            make install
-    # Qt dependencies
-    qt-dependencies:
-        plugin: nil
-        # From deb packaging build deps
-        build-packages:
-            - g++
-            - freetds-dev
-            - gdb
-            - libasound2-dev
-            - libatspi2.0-dev
-            - libcups2-dev
-            - libdbus-1-dev
-            - libfontconfig1-dev
-            - libfreetype6-dev
-            - libgbm-dev
-            - libgl1-mesa-dev
-            - libgles2-mesa-dev
-            - libglib2.0-dev
-            - libglu1-mesa-dev
-            - libgstreamer-plugins-base1.0-dev
-            - libgstreamer1.0-dev
-            - libgtk2.0-dev
-            - libharfbuzz-dev
-            - libicu-dev
-            - libinput-dev
-            - libjpeg-dev
-            - libmtdev-dev
-            - libmysqlclient-dev
-            - libpcre3-dev
-            - libpng12-dev
-            - libpq-dev
-            - libproxy-dev
-            - libpulse-dev
-            - libsqlite3-dev
-            - libssl-dev
-            - libudev-dev
-            - libx11-dev
-            - libx11-xcb-dev
-            - libxcb-icccm4-dev
-            - libxcb-image0-dev
-            - libxcb-keysyms1-dev
-            - libxcb-randr0-dev
-            - libxcb-render-util0-dev
-            - libxcb-render0-dev
-            - libxcb-shape0-dev
-            - libxcb-shm0-dev
-            - libxcb-sync-dev
-            - libxcb-xfixes0-dev
-            - libxcb-xinerama0-dev
-            - libxcb-xkb-dev
-            - libxcb1-dev
-            - libxext-dev
-            - libxi-dev
-            - libxkbcommon-dev
-            - libxkbcommon-x11-dev
-            - libxrender-dev
-            - pkg-kde-tools
-            - publicsuffix
-            - unixodbc-dev
-            - xvfb
-            - zlib1g-dev
-            # QtWebEngine
-            - bison
-            - build-essential
-            - gperf
-            - flex
-            - ruby
-            - python
-            - libbz2-dev
-            - libcap-dev
-            - libdrm-dev
-            - libegl1-mesa-dev
-            - libgcrypt11-dev
-            - libnss3-dev
-            - libpci-dev
-            - libxtst-dev
-            - libxss-dev
-            - gyp
-            - ninja-build
-            # Additional
-            # some of them may, some
-            # of them may not be required
-            - libflac-dev
-            - libflac++-dev
-            - libsnappy-dev
-            - libxcursor-dev
-            - libxcomposite-dev
-            - libxdamage-dev
-            - libxrandr-dev
-            - libsrtp0-dev
-            - libwebp-dev
-            - libspeex-dev
-            - libjsoncpp-dev
-            - libopus-dev
-            - libspeexdsp-dev
-            - libminizip-dev
-            - libavutil-dev
-            - libavformat-dev
-            - libavcodec-dev
-            - libevent-dev
-            - libopusfile-dev
-        # currently tailored from ubuntu 16.04 package names (mostly libpng etc may vary)
-        stage-packages:
-            - etc1tool # minimal package for depending on libpng regardless of Ubuntu version
-            - fontconfig
-            - icu-devtools
-            - libc6
-            - libcups2
-            - libdbus-1-3
-            - libdrm2
-            - libegl1-mesa
-            - libfontconfig1
-            - libfreetype6
-            - libgbm1
-            - libgcc1
-            - libgl1-mesa-dev
-            - libgl1-mesa-glx
-            - libgles2-mesa-dev
-            - libglib2.0-0
-            - libglu1-mesa-dev
-            - libharfbuzz0b
-            - libice6
-            - libinput10
-            - libjpeg8
-            - libmtdev1
-            - libpcre16-3
-            - libproxy1v5
-            - libsm6
-            - libsqlite3-0
-            - libstdc++6
-            - libudev1
-            - libx11-6
-            - libx11-xcb1
-            - libxcb1
-            - libxcb-glx0
-            - libxcb-icccm4
-            - libxcb-image0
-            - libxcb-keysyms1
-            - libxcb-randr0
-            - libxcb-render0
-            - libxcb-render-util0
-            - libxcb-shape0
-            - libxcb-shm0
-            - libxcb-sync1
-            - libxcb-xfixes0
-            - libxcb-xkb1
-            - libxext-dev
-            - libxi6
-            - libxkbcommon0
-            - libxkbcommon-x11-0
-            - libxcb-xinerama0
-            - libxrender1
-            - perl
-            - zlib1g
-            - libdouble-conversion1v5
-            - libpulse0
-            # QtWebEngine
-            - libwebpdemux1
-            - libnspr4
-            - libxcursor1
-            - libxcomposite1
-            - libxtst6
-            - libxss1
-            - libopus0
-            - libasound2
-            - libsnappy1v5
-            - libminizip1
-            - libwebp5
-            - libnss3
-            - libevent-2.0-5
-            - libxml2
-            - libxslt1.1
+  liri-app-launch:
+    source: src
+    plugin: dump
+    organize:
+      liri-app-launch.sh: bin/liri-app-launch
+    stage:
+      - bin/liri-app-launch
+    after:
+      - desktop-glib-only
+  liri-qbs-meta: &liri-qbs-meta
+    plugin: template
+    build-attributes: ["no-system-libraries"]
+    qbs-options:
+      - modules.lirideployment.prefix:usr
+      - modules.lirideployment.qmlDir:usr/lib/x86_64-linux-gnu/qt5/qml
+      - modules.lirideployment.pluginsDir:usr/lib/x86_64-linux-gnu/qt5/plugins
+  fluid:    
+    <<: *liri-qbs-meta
+    source: https://github.com/lirios/fluid.git
+    plugin: qbs
+    qbs-options:
+      - modules.lirideployment.prefix:usr
+      - modules.lirideployment.qmlDir:usr/lib/x86_64-linux-gnu/qt5/qml
+      - modules.lirideployment.pluginsDir:usr/lib/x86_64-linux-gnu/qt5/plugins
+      - projects.Fluid.useSystemQbsShared:true
+    after:
+      - qt
+      - qbs
+  qtaccountsservice:
+    <<: *liri-qbs-meta
+    plugin: qbs
+    source: https://github.com/lirios/qtaccountsservice.git
+    after:
+      - qt
+      - qbs
+      - qbs-shared
+  qtgsettings:
+    <<: *liri-qbs-meta
+    plugin: qbs
+    source: https://github.com/lirios/qtgsettings.git
+    build-packages:
+      - libglib2.0-dev
+    after:
+      - qt
+      - qbs
+  libliri:
+    <<: *liri-qbs-meta
+    plugin: qbs
+    source: https://github.com/lirios/libliri.git
+    after:
+      - qbs
+      - qbs-shared
+      - libqtxdg
+  liri-wayland:
+    <<: *liri-qbs-meta
+    plugin: qbs
+    source: https://github.com/lirios/wayland.git
+    build-packages:
+      - libudev-dev
+      - libinput-dev
+      - libgbm1
+      - libgbm-dev
+      - libxcb-cursor-dev
+      - libxcb-cursor0
+      - libxcb-composite0-dev
+      - libxcb-composite0
+      - libwayland-client0
+      - libwayland-dev
+      - libx11-dev
+      - libxcursor-dev
+      - libx11-xcb-dev
+      - libegl1-mesa-dev
+    stage-packages:
+      - libudev1
+      - libinput10
+    after:
+      - qt
+      - qbs
+      - qbs-shared
+      - kf5-deps
+      - libliri
+      - qtwayland
+  vibe:
+    <<: *liri-qbs-meta
+    plugin: qbs
+    source: https://github.com/lirios/vibe.git
+    build-packages:
+      - libpolkit-qt5-1-dev
+      - libpolkit-qt5-1-1
+      - libpulse-dev
+      - libpulse0
+      - libdrm-dev
+      - libgbm-dev
+      - libxcb-cursor-dev
+    stage-packages:
+      - libpolkit-qt5-1-dev
+      - libpolkit-qt5-1-1
+      - libpulse-dev
+      - libpulse0
+      - libdrm2
+      - libxcb-cursor0
+    after:
+      - qt
+      - kf5-deps
+      - qbs
+      - qbs-shared
+      - libliri
+      - fluid
+  qbs-shared:
+    plugin: qbs
+    source: https://github.com/lirios/qbs-shared.git
+    qbs-options:
+      - project.prefix:usr
+    after:
+      - qt
+      - qbs
+  fonts:
+    plugin: nil
+    stage-packages:
+      - fonts-roboto
+      - fonts-noto
+  libqtxdg:
+    plugin: cmake
+    source: https://github.com/lxde/libqtxdg/archive/2.0.0.tar.gz
+    after: [qt]
+  # As of 2018-03-31, Debian is lacking private headers for QtWayland
+  # (in libqt5waylandclient5-dev).
+  # Therefore we build this module from source as a workaround.
+  # See https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=894472
+  qtwayland:
+    plugin: qmake
+    source: https://github.com/qt/qtwayland.git
+    source-tag: v5.10.0
+    after: [qt]
+    build-packages:
+      - libfontconfig1-dev
+      - libfreetype6-dev
+      - libxkbcommon-dev
+      - libwayland-dev
+      - libdrm-dev
+    stage-packages:
+      - libwayland-cursor0
+  qbs:
+    plugin: nil
+    stage-packages:
+      - qbs
+      - qbs-dev
+    after: [qt]
+  kf5-deps:
+    plugin: nil
+    build-packages:
+      - modemmanager-dev
+      - network-manager-dev
+      - libmm-glib-dev
+      - libnm-dev
+      - modemmanager
+      - network-manager
+    stage-packages:
+      - libkf5solid5
+      - libkf5solid-dev 
+      - libkf5networkmanagerqt-dev
+      - modemmanager-qt-dev
+      - libkf5networkmanagerqt6
+      - libkf5modemmanagerqt6
+      - modemmanager-dev
+      - network-manager-dev
+      - modemmanager
+      - network-manager
+      - libmm-glib-dev
+      - libnm-dev
+    after:
+      - qt
+      - qt-conf-bin
+      - qt-conf-libexec
+  qt-conf-bin:
+    plugin: dump
+    source: src
+    organize:
+      qt.conf: usr/lib/x86_64-linux-gnu/qt5/bin/qt.conf
+    stage:
+      - usr/lib/x86_64-linux-gnu/qt5/bin/qt.conf
+    after: [qt]
+  qt-conf-libexec:
+    plugin: dump
+    source: src
+    organize:
+      qt.conf: usr/lib/x86_64-linux-gnu/qt5/libexec/qt.conf
+    stage:
+      - usr/lib/x86_64-linux-gnu/qt5/libexec/qt.conf
+    after: [qt]
+  qt-symlinks:
+    plugin: nil
+    install: |
+      mkdir -p $SNAPCRAFT_PART_INSTALL/usr/lib/x86_64-linux-gnu/qt5
+      ln -s ../../../share/qt5/translations \
+        $SNAPCRAFT_PART_INSTALL/usr/lib/x86_64-linux-gnu/qt5/translations
+      ln -s ../../../share/qt5/resources \
+        $SNAPCRAFT_PART_INSTALL/usr/lib/x86_64-linux-gnu/qt5/resources
+    after: [qt]
+  qt:
+    plugin: nil
+    stage-packages:
+      - qtbase5-dev
+      - qtbase5-dev-tools
+      - qtbase5-private-dev
+      - libqt5opengl5-dev
+      - libqt5opengl5
+      - qtdeclarative5-dev
+      - qtdeclarative5-dev-tools
+      - qtdeclarative5-private-dev
+      - qtquickcontrols2-5-dev
+      - libqt5svg5-dev
+      - libqt5webengine5
+      - qtwebengine5-dev
+      - qtwebengine5-dev-tools
+      - qttools5-dev
+      - qttools5-dev-tools
+      - qttools5-private-dev
+      - qml-module-qtquick2
+      - qml-module-qtquick-window2
+      - qml-module-qtquick-layouts
+      - qml-module-qttest
+      - qml-module-qtgraphicaleffects
+      - qml-module-qtqml-models2
+      - qml-module-qtquick-controls2
+      - qml-module-qtquick-templates2
+      - qml-module-qt-labs-platform
+      - qml-module-qt-labs-calendar
+      - qml-module-qtwebengine
+      - qml-module-qtwebchannel
