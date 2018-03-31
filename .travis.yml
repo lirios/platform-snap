@@ -1,0 +1,15 @@
+language: bash
+
+cache:
+  directories:
+    - /var/cache/apt/archives/*.deb
+compiler: gcc
+sudo: require
+dist: trusty
+
+script:
+  - ./.travis/build.sh
+
+notifications:
+  email: false
+  slack: lirios:fdUqVmPzqPskEL1UBhqapZ0w

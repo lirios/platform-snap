@@ -1,5 +1,6 @@
 # -*- Mode:Python; indent-tabs-mode:nil; tab-width:4 -*-
 #
+# Copyright (C) 2018 Tim Süberkrüb <dev@timsueberkrueb.io>
 # Copyright (C) 2016 Canonical Ltd
 #
 # This program is free software: you can redistribute it and/or modify
@@ -57,6 +58,7 @@ class QmakePlugin(snapcraft.BasePlugin):
         }
         schema['properties']['qt-version'] = {
             'enum': ['qt4', 'qt5'],
+            'defaukt': 'qt5'
         }
         schema['properties']['project-files'] = {
             'type': 'array',
@@ -67,9 +69,6 @@ class QmakePlugin(snapcraft.BasePlugin):
             },
             'default': [],
         }
-
-        # Qt version must be specified
-        schema['required'].append('qt-version')
 
         return schema
 
@@ -93,7 +92,7 @@ class QmakePlugin(snapcraft.BasePlugin):
     def build(self):
         super().build()
 
-        env = self._build_environment()
+        env = os.environ.copy()
 
         sources = []
         if self.options.project_files:
@@ -104,41 +103,13 @@ class QmakePlugin(snapcraft.BasePlugin):
             sources = [os.path.join(sourcedir, project_file)
                        for project_file in self.options.project_files]
 
-        self.run(['qmake'] + self._extra_config() + self.options.options +
+        qmake = '{}/usr/lib/x86_64-linux-gnu/qt5/bin/qmake'.format(self.project.stage_dir)
+
+        self.run([qmake] + self.options.options +
                  sources, env=env)
 
         self.run(['make', '-j{}'.format(
             self.parallel_build_count)], env=env)
 
-        self.run(['make', 'install', 'INSTALL_ROOT=' + self.installdir],
+        self.run(['make', 'install'],
                  env=env)
-
-    def _extra_config(self):
-        extra_config = []
-
-        for root in [self.installdir, self.project.stage_dir]:
-            paths = common.get_library_paths(root, self.project.arch_triplet)
-            for path in paths:
-                extra_config.append("LIBS+=\"-L{}\"".format(path))
-            extra_config.append("LIBS+=\"-L{}\"".format(self.project.stage_dir + '/usr/lib/qt5/lib'))
-            extra_config.append("QMAKE_LIBS+=\"-L{}\"".format(self.project.stage_dir + '/usr/lib/qt5/lib'))
-            extra_config.append("QMAKE_LIBDIR+=\"{}\"".format(self.project.stage_dir + '/usr/lib/qt5/lib'))
-
-            paths = common.get_include_paths(root, self.project.arch_triplet)
-            for path in paths:
-                extra_config.append("INCLUDEPATH+=\"{}\"".format(path))
-            extra_config.append("INCLUDEPATH+=\"{}\"".format(self.project.stage_dir + '/usr/lib/qt5/include'))
-
-            extra_config.append("QML_IMPORT_PATH+=\"{}\"".format(self.project.stage_dir + '/usr/lib/qt5/qml'))
-            extra_config.append("QML2_IMPORT_PATH+=\"{}\"".format(self.project.stage_dir + '/usr/lib/qt5/qml'))
-
-        return extra_config
-
-    def _build_environment(self):
-        env = os.environ.copy()
-        env['QTDIR' ] = self.project.stage_dir + '/usr/lib/qt5/'
-        env['QML_IMPORT_PATH' ] = self.project.stage_dir + '/usr/lib/qt5/qml'
-        env['QML2_IMPORT_PATH' ] = self.project.stage_dir + '/usr/lib/qt5/qml'
-        env['LD_LIBRARY_PATH' ] = self.project.stage_dir + '/usr/lib/qt5/lib'
-        env['PATH' ] = self.project.stage_dir + '/usr/lib/qt5/bin:' + os.environ["PATH"]
-        return env
