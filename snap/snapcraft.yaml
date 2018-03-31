@@ -136,6 +136,8 @@ parts:
   qbs-shared:
     plugin: qbs
     source: https://github.com/lirios/qbs-shared.git
+    qbs-options:
+      - project.prefix:usr
     after:
       - qt
       - qbs
