@@ -5,7 +5,7 @@ Liri App Platform for Snap
 [![GitHub release](https://img.shields.io/github/release/lirios/platform-snap.svg)](https://github.com/lirios/platform-snap)
 [![Build Status](https://travis-ci.org/lirios/platform-snap.svg?branch=develop)](https://travis-ci.org/lirios/platform-snap)
 [![GitHub issues](https://img.shields.io/github/issues/lirios/platform-snap.svg)](https://github.com/lirios/platform-snap/issues)
-[![Maintained](https://img.shields.io/maintenance/yes/2017.svg)](https://github.com/lirios/platform-snap/commits/develop)
+[![Maintained](https://img.shields.io/maintenance/yes/2018.svg)](https://github.com/lirios/platform-snap/commits/develop)
 
 Liri App Platform package for [snap][snapcraft-io]. This snap package
 serves as bundle for libraries commonly used by Liri Apps.
